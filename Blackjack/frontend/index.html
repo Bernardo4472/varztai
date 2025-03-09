@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blackjack</title>
+</head>
+<body>
+    <h1>Blackjack žaidimas</h1>
+    <button onclick="placeBet(100)">Statyti 100</button>
+    <p id="players"></p>
+
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script>
+        const socket = io("http://localhost:3000"); // Prisijungiame prie serverio
+
+        socket.on("connect", () => {
+            console.log("✅ Prisijungta prie serverio!");
+        });
+
+        socket.on("players", (players) => {
+            document.getElementById("players").innerText = JSON.stringify(players, null, 2);
+        });
+
+        function placeBet(amount) {
+            socket.emit("bet", amount);
+        }
+    </script>
+</body>
+</html>

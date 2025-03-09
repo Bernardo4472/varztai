@@ -21,12 +21,33 @@ const db = new Pool({
     port: process.env.DB_PORT,
 });
 
+// Patikriname, ar duomenų bazė veikia
+db.connect()
+    .then(() => console.log("🔗 Prisijungta prie PostgreSQL"))
+    .catch(err => console.error("❌ DB klaida:", err));
+
+const players = {}; // Žaidėjų sąrašas
+
 // WebSockets žaidėjams
 io.on("connection", (socket) => {
-    console.log(`Naujas žaidėjas prisijungė: ${socket.id}`);
+    console.log(`🔗 Naujas žaidėjas prisijungė: ${socket.id}`);
 
+    players[socket.id] = { id: socket.id, balance: 1000 };
+    io.emit("players", players); // Atnaujiname visiems prisijungusiems
+
+    // Kai žaidėjas atlieka statymą
+    socket.on("bet", (amount) => {
+        if (players[socket.id]) {
+            players[socket.id].balance -= amount;
+            io.emit("players", players); // Atnaujinti visiems
+        }
+    });
+
+    // Kai žaidėjas atsijungia
     socket.on("disconnect", () => {
-        console.log(`Žaidėjas atsijungė: ${socket.id}`);
+        console.log(`❌ Žaidėjas atsijungė: ${socket.id}`);
+        delete players[socket.id];
+        io.emit("players", players); // Atnaujinti visiems
     });
 });
 
