@@ -55,17 +55,23 @@ git clone https://github.com/TAVO-REPO-NUORODA.git
 cd blackjack-project
 ```
 
-### 2️⃣ Paleisti **backend**
+### 2️⃣ Parsisiųsti priklausomybes
 ```bash
 cd backend
-npm install  # Įdiegti priklausomybes
+npm install
+cd ../frontend
+npm install
+```
+
+### 3️⃣ Paleisti **backend**
+```bash
+cd backend
 npm run dev  # Paleisti serverį
 ```
 
-### 3️⃣ Paleisti **frontend**
+### 4️⃣ Paleisti **frontend**
 ```bash
 cd frontend
-npm install  # Įdiegti priklausomybes
 npm start  # Paleisti React aplikaciją
 ```
 
