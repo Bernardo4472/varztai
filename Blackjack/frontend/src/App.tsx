@@ -1,16 +1,16 @@
-﻿import React from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+﻿import { Routes, Route } from "react-router-dom";
+import Login from "./components/Login";
 import Register from "./components/Register";
-import Login from "./components/Login"; // Jei turi prisijungimo komponentą
+import Main from "./components/Main";
+import "./components/Styles.css";
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-      </Routes>
-    </Router>
+    <Routes>
+      <Route path="/" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/main" element={<Main />} />
+    </Routes>
   );
 }
 
