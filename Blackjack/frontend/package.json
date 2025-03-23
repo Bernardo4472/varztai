@@ -1,15 +1,36 @@
 {
+  "name": "blackjack-frontend",
+  "version": "1.0.0",
+  "private": true,
   "dependencies": {
-    "react-router-dom": "^7.3.0",
-    "react-scripts": "^5.0.1"
-  },
-  "scripts": {
-    "start": "react-scripts start"
+    "ajv": "^6.12.6",
+    "ajv-keywords": "^3.5.2",
+    "axios": "^1.8.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.20.1",
+    "react-scripts": "^5.0.1",
+    "socket.io-client": "^4.7.2",
+    "web-vitals": "^3.3.1"
   },
   "devDependencies": {
-    "eslint": "^9.22.0",
-    "husky": "^9.1.7",
-    "prettier": "^3.5.3"
+    "@types/react": "^18.2.14",
+    "@types/react-dom": "^18.2.7",
+    "@types/react-router-dom": "^5.3.3",
+    "@types/socket.io-client": "^1.4.36",
+    "typescript": "4.9.5"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
   },
   "browserslist": {
     "production": [
