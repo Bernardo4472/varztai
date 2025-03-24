@@ -11,8 +11,13 @@ interface GameCreateRequestBody {
 }
 
 // 🔹 Įrašyti žaidimo rezultatą
-router.post("/", async (req: Request<{}, {}, GameCreateRequestBody>, res: Response): Promise<any> => {
-  const { user_id, result, bet, balance_after } = req.body;
+router.post("/", async (req: Request, res: Response): Promise<any> => {
+  const { user_id, result, bet, balance_after } = req.body as {
+    user_id: number;
+    result: string;
+    bet: number;
+    balance_after: number;
+  };
 
   if (!user_id || !result || !bet || !balance_after) {
     return res.status(400).json({ message: "Trūksta laukų." });

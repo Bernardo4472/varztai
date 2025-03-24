@@ -8,7 +8,7 @@ const router = Router();
 router.post("/register", async (req: Request, res: Response): Promise<any> => {
   const { username, email, password } = req.body as {
     username: string;
-    email: string;
+    email: `${string}@${string}.com`;
     password: string;
   };
 
@@ -17,7 +17,9 @@ router.post("/register", async (req: Request, res: Response): Promise<any> => {
     if (userExists.rows.length > 0) {
       return res.status(400).json({ message: "Toks el. paštas jau naudojamas." });
     }
-
+    if (! email.includes("@")) {
+      return res.status(400).json({ message: "Blogas el. pašto formatas" });
+    }
     const hashedPassword = await bcrypt.hash(password, 10);
     await db.query(
       "INSERT INTO users (username, email, password) VALUES ($1, $2, $3)",

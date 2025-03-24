@@ -3,6 +3,7 @@ import http from "http";
 import cors from "cors";
 import dotenv from "dotenv";
 import { Server } from "socket.io";
+import gamesRoute from "./routes/gameRoutes";
 import authRoutes from "./routes/authRoutes";
 import playersRoutes from "./routes/playerRoutes";
 
@@ -17,6 +18,7 @@ app.use(express.json());
 
 app.use("/api", authRoutes);
 app.use("/players", playersRoutes);
+app.use("/games", gamesRoute);
 
 io.on("connection", (socket) => {
   console.log("🔗 Naujas žaidėjas:", socket.id);
@@ -30,7 +32,7 @@ io.on("connection", (socket) => {
   });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`✅ Serveris paleistas ant ${PORT} porto`);
 });
