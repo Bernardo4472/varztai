@@ -5,7 +5,7 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "nodemon --watch src --exec ts-node src/server.ts",
-    "start": "ts-node src/server.ts",
+    "start": "node dist/server.js",
     "build": "tsc"
   },
   "dependencies": {
@@ -16,7 +16,8 @@
     "http": "^0.0.1-security",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.14.1",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.8.1",
+    "ts-node": "^10.9.2"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
@@ -29,7 +30,6 @@
     "husky": "^9.1.7",
     "nodemon": "^3.1.9",
     "prettier": "^3.5.3",
-    "ts-node": "^10.9.2",
     "typescript": "^5.8.2"
   }
 }

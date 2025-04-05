@@ -1,24 +1,31 @@
-version: "3.8"
+version: '3.8'
 
 services:
   db:
     image: postgres:16
     restart: always
     environment:
-      POSTGRES_DB: appdb
-      POSTGRES_USER: appuser
+      POSTGRES_USER: blackjack
       POSTGRES_PASSWORD: secret
-    volumes:
-      - ./postgres-init:/docker-entrypoint-initdb.d
+      POSTGRES_DB: blackjackdb
     ports:
       - "5432:5432"
+    volumes:
+      - ./database:/docker-entrypoint-initdb.d
 
   backend:
-    build: .
+    build: ./backend
     ports:
-      - "3000:3000"
+      - "5000:5000"
     environment:
-      DATABASE_URL: postgres://appuser:secret@db:5432/appdb
+      DATABASE_URL: postgres://blackjack:secret@db:5432/blackjackdb
       JWT_SECRET: slaptas_tokenas
     depends_on:
       - db
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      REACT_APP_API_URL: http://localhost:5000
