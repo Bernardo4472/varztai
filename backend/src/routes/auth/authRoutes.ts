@@ -4,7 +4,9 @@ import jwt from "jsonwebtoken";
 import db from "../../config/db";
 
 const router = Router();
-
+router.get("/register", (_req: Request, res: Response) => {
+  res.send("✅ Register endpoint gyvas! Naudok POST, ne GET.");
+});
 router.post("/register", async (req: Request, res: Response): Promise<any> => {
   const { username, email, password } = req.body as {
     username: string;
