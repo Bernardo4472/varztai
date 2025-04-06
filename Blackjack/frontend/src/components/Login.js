@@ -26,7 +26,7 @@ const Login = () => {
                         <input type="password" id="login-password" placeholder="Password" required />
                     </div>
                     <p id="error-message" className="error"></p>
-                    <button id="login-btn" onClick={handleLogin}>Login</button> {/* Paspaudus kviečia handleLogin */}
+                    <button id="login-btn" onClick={handleLogin}>Login</button>
                     <p>Don't have an account? <a href="/register">Register</a></p>
                 </div>
             </div>
