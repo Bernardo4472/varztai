@@ -1,0 +1,144 @@
+/* General Styles */
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #b04949;
+  margin: 0;
+  padding: 0;
+}
+
+h1 {
+  text-align: center;
+  font-size: 2.5rem;
+  color: #333;
+  margin-top: 20px;
+}
+
+/* Game Container */
+.game-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 85vw;  /* Increased width for a larger container */
+  height: 80vh; /* Increased height for a larger container */
+  position: relative;
+  margin: 0 auto;
+  background-color: #ffffff;
+  padding: 60px; /* Added more padding to create space around the oval */
+  border-radius: 50%;  /* Oval shape */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);  /* Shadow for depth */
+  overflow: hidden;  /* Prevent content from overflowing */
+  max-width: 900px; /* Maximum width for large screens */
+  max-height: 700px; /* Maximum height for large screens */
+}
+
+/* Ensure the content inside the container stays centered */
+.game-container > * {
+  z-index: 10;  /* Keep everything above the background */
+}
+
+/* Oval Table Layout for Hands */
+.hand {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 500px;  /* Oval width */
+  height: 350px; /* Increased oval height */
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);  /* This centers the oval horizontally and vertically */
+  flex-wrap: wrap;
+  pointer-events: none; /* Prevent interaction with the cards layout */
+}
+
+/* Player's Hand at the Bottom */
+#user-hand {
+  bottom: 1%; /* Position player hand further from the bottom */
+  transform: translateX(-50%); /* Center horizontally */
+  left: 50%; /* Center horizontally */
+}
+
+/* Dealer's Hand at the Top */
+#dealer {
+  top: 1%; /* Position dealer hand further from the top */
+  left: 50%; /* Center horizontally */
+  transform: translateX(-50%); /* Center horizontally */
+}
+
+/* Card Styling */
+.card {
+  width: 50px;  /* Reduced width */
+  height: 70px; /* Reduced height */
+  margin: 8px;  /* Adjusted margin for smaller cards */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #000000;
+  color: white;
+  border-radius: 2px;
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+}
+
+.card img {
+  width: 100%;
+  height: 100%;
+}
+
+/* Hand Labels */
+h2 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+/* Game Actions Positioned Outside the Oval */
+.actions {
+  position: relative;
+  margin-top: 30px; /* Move buttons further down, outside the oval */
+  z-index: 15;  /* Ensure buttons stay above the oval container */
+  text-align: center;
+}
+
+button {
+  padding: 12px 25px;
+  font-size: 1.3rem;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  margin: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #2d6630;
+}
+
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+button + button {
+  margin-left: 10px;
+}
+
+/* Game Over Section */
+h3 {
+  font-size: 1.5rem;
+  text-align: center;
+  color: #D32F2F;
+  margin-top: 20px;
+}
+
+/* Styling for Background */
+.greeting {
+  text-align: center;
+  font-size: 3rem;
+  font-weight: bold;
+  margin-top: 50px;
+  color: #fff;
+}
