@@ -1,5 +1,5 @@
 import React from "react";
-import "./Styles.css"; // arba nurodyk tikslų CSS failą
+import "./Styles.css"; 
 import { useNavigate } from "react-router-dom";
 
 const BlackjackRules = () => {
