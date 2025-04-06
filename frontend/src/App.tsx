@@ -6,6 +6,7 @@ import Settings from './pages/Settings';
 import Profile from './pages/Profile';
 import PlayChoose from './pages/PlayChoose';
 import Lobby from './pages/Lobby';
+import Rules from './pages/Rules';
 
 const App = () => {
   return (
@@ -16,7 +17,8 @@ const App = () => {
       <Route path="/settings" element={<Settings />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/playChoose" element={<PlayChoose />} />
-      <Route path="/lobby" element={<Lobby />} />      
+      <Route path="/lobby" element={<Lobby />} /> 
+      <Route path="/rules" element={<Rules />} />     
     </Routes>
   );
 };

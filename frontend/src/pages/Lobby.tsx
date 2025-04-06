@@ -11,9 +11,16 @@ const Main: React.FC = () => {
   const handleDirectorySettings = () => {
     navigate("/Settings");
   };
+  const handleDirectoryRules = () => {
+    navigate("/Rules");
+  };
 
   //const [players, setPlayers] = useState<any[]>([]); // jei žaisi su tipais vėliau, galima aprašyti
-
+  const closeTab = () => {
+    window.opener = null;
+    window.open("", "_self");
+    window.close();
+  };
   return (
     <div>
       <div className="page_Container">
@@ -25,8 +32,8 @@ const Main: React.FC = () => {
 
             <button onClick={handleDirectoryPlay}>Žaisti</button>
             <button onClick={handleDirectorySettings}>Nustatymai</button>
-            <button>Išjungti</button>
-            <button>Taisyklės</button>
+            <button onClick={closeTab}>Išjungti</button>
+            <button onClick={handleDirectoryRules}>Taisyklės</button>
           </div>
         </div>
       </div>
