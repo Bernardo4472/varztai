@@ -1,0 +1,79 @@
+/* Navbar – plonas ir per visą ekraną */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed; /* Išlaiko navbar viršuje */
+    top: 0;
+    left: 0;
+    width: 100%; /* Užtikrina, kad eitų per visą ekraną */
+    height: 50px; /* Plonesnis navbar */
+    background-color: #222; /* Tamsus fonas */
+    color: white;
+    padding: 0 20px;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+/* Navbar logo */
+.navbar .logo {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+/* Profiliui dešinėje */
+.navbar .profile-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* Profilio paveikslėlis */
+.profile-pic {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+/* Išsiskleidžiantis meniu */
+.dropdown-menu {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background: white;
+    color: black;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    width: 150px;
+    padding: 10px 0;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Rodo dropdown, kai jis atidarytas */
+.profile-container.active .dropdown-menu {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Dropdown elementai */
+.dropdown-item {
+    padding: 10px;
+    text-decoration: none;
+    color: black;
+    display: block;
+    transition: background 0.3s;
+}
+
+.dropdown-item:hover {
+    background: #ddd;
+}
+
+/* Kad turinys nebūtų už navbaro */
+.page-content {
+    margin-top: 70px;
+}
