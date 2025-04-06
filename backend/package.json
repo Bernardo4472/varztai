@@ -2,10 +2,10 @@
   "name": "backend",
   "version": "1.0.0",
   "type": "commonjs",
-  "main": "dist/server.js",
+  "main": "src/server.ts",
   "scripts": {
-    "dev": "nodemon --watch src --exec ts-node src/server.ts",
     "start": "ts-node src/server.ts",
+    "dev": "nodemon --watch src --exec ts-node src/server.ts",
     "build": "tsc"
   },
   "dependencies": {
@@ -16,20 +16,19 @@
     "http": "^0.0.1-security",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.14.1",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.8.1",
+    "ts-node": "^10.9.2"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
-    "@types/express": "^5.0.1",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.9",
-    "@types/node": "^22.13.11",
-    "@types/pg": "^8.11.11",
+    "@types/node": "^20.11.17",
+    "@types/dotenv": "^8.2.0",
+    "@types/pg": "^8.6.6",
     "@types/socket.io": "^3.0.1",
-    "eslint": "^9.22.0",
-    "husky": "^9.1.7",
-    "nodemon": "^3.1.9",
-    "prettier": "^3.5.3",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.8.2"
+    "nodemon": "^3.1.0",
+    "typescript": "^5.3.3"
   }
 }
