@@ -9,6 +9,8 @@ import Profile from "./components/Profile";
 import PlayChoose from "./components/PlayChoose";
 import CreateRoom from "./components/CreateRoom";
 import JoinRoom from "./components/JoinRoom";
+import Rules from "./components/Rules";
+
 
 const App = () => {
     return (
@@ -23,6 +25,7 @@ const App = () => {
                 <Route path="/playChoose" element={<PlayChoose />} />
                 <Route path="/create-room" element={<CreateRoom />} />
                 <Route path="/join-room" element={<JoinRoom />} />
+                <Route path="/Rules" element={<Rules />} />
             </Routes>
         </Router>
     );

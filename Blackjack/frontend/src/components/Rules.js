@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import "./Styles.css"; // arba nurodyk tikslų CSS failą
 import { useNavigate } from "react-router-dom";
 
@@ -11,6 +11,7 @@ const BlackjackRules = () => {
         <h1 className="title">Blackjack taisyklės</h1>
 
         <div className="form-box">
+            <div className="text-color">
           <p>
             <strong>🎯 Žaidimo tikslas:</strong> Surinkti kuo artimesnę 21 taškui kortų sumą, neviršijant jos.
           </p>
@@ -56,6 +57,7 @@ const BlackjackRules = () => {
           </button>
         </div>
       </div>
+    </div>
     </div>
   );
 };

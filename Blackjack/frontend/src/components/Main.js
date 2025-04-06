@@ -14,6 +14,10 @@ const Main = () => {
         
         navigate("/Settings");
     };
+    const handleDirectoryRules = () => {
+        
+        navigate("/Rules");
+    };
     const [players, setPlayers] = useState([]);
 
     useEffect(() => {
@@ -50,7 +54,7 @@ const Main = () => {
                     <button>
                         Išjungti
                     </button>
-                    <button>
+                    <button onClick={handleDirectoryRules}>
                         Taisyklės
                     </button>
                 </div>
