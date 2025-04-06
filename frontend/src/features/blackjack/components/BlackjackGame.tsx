@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import styles from "./BlackjackGame.module.css";
 // No need to import CSS files or reportWebVitals here as they're handled at the app level
 
 // Define types for our card and game
@@ -10,7 +11,7 @@ interface Card {
 // Card component to represent a single card
 const Card: React.FC<{ card: Card }> = ({ card }) => {
   if (!card) return null;  // Early return if card is undefined
-  const imagePath = `../../../assets/images/${card.suit}-${card.rank}.png`;
+  const imagePath = `../../../../images/${card.suit}-${card.rank}.png`;
 
   return (
     <div className="card">
@@ -21,7 +22,7 @@ const Card: React.FC<{ card: Card }> = ({ card }) => {
 
 // Function to play sound effects
 const playSound = (soundFile: string): void => {
-  const sound = new Audio(`../../../assets/sounds/${soundFile}`);
+  const sound = new Audio(`../../../../sounds/${soundFile}`);
   sound.play();
 };
 
@@ -173,51 +174,59 @@ const BlackjackGame: React.FC = () => {
   }, [gameOver, playerBust, dealerHand.length]);
 
   return (
-    <div className="game-container">
-      {/* Dealer's Cards */}
-      <div className="hand" id="dealer">
-        <h2>Dealer's Hand</h2>
-        {dealerHand.map((card, index) => {
-          // Show the second card face down if the game is not over
-          if (index === 1 && !gameOver) {
-            return <div className="card" key={index}><img src="../../../assets/images/back.png" alt="card back" /></div>;
-          }
-          return <Card key={index} card={card} />;
-        })}
-        {/* Show the value of the dealer's first card */}
-        {!gameOver && dealerHand.length > 0 && <p>Value: {calculateHandValue([dealerHand[0]])}</p>}
-        {/* Only show the value of the dealer's hand if the game is over */}
-        {gameOver && <p>Value: {calculateHandValue(dealerHand)}</p>}
-      </div>
-
-      {/* Player's Cards */}
-      <div className="hand" id="user-hand">
-        <h2>Your Hand</h2>
-        {playerHand.map((card, index) => <Card key={index} card={card} />)}
-        <p>Value: {calculateHandValue(playerHand)}</p>
-      </div>
-
-      {/* Game Actions */}
-      <div className="actions">
-        {gameOver ? (
-          <div>
-            <h3>{handleGameOver()}</h3>
-            <button onClick={startGame}>Start New Game</button>
-          </div>
-        ) : (
-          <div>
-            <button onClick={hit}>Hit</button>
-            <button onClick={stand}>Stand</button>
-          </div>
+    //<div className={styles.container}>
+      <div className={styles.gameContainer}>
+        {/* Dealer's Cards */}
+        <div className={`${styles.hand} ${styles.dealerHand}`}>
+          <h2>Dealer's Hand</h2>
+          {dealerHand.map((card, index) => {
+            if (index === 1 && !gameOver) {
+              return (
+                <div className={styles.card} key={index}>
+                  <img src="../../../../images/back.png" alt="card back" />
+                </div>
+              );
+            }
+            return <Card key={index} card={card} />;
+          })}
+          {!gameOver && dealerHand.length > 0 && (
+            <p>Value: {calculateHandValue([dealerHand[0]])}</p>
+          )}
+          {gameOver && <p>Value: {calculateHandValue(dealerHand)}</p>}
+        </div>
+  
+        {/* Player's Cards */}
+        <div className={`${styles.hand} ${styles.userHand}`}>
+          <h2>Your Hand</h2>
+          {playerHand.map((card, index) => (
+            <Card key={index} card={card} />
+          ))}
+          <p>Value: {calculateHandValue(playerHand)}</p>
+        </div>
+  
+        {/* Game Actions */}
+        <div className={styles.actions}>
+          {gameOver ? (
+            <div>
+              <h3 className={styles.resultText}>{handleGameOver()}</h3>
+              <button className={styles.button} onClick={startGame}>Start New Game</button>
+            </div>
+          ) : (
+            <div>
+              <button className={styles.button} onClick={hit}>Hit</button>
+              <button className={styles.button} onClick={stand}>Stand</button>
+            </div>
+          )}
+        </div>
+  
+        {!playerHand.length && !gameOver && (
+          <button className={styles.button} onClick={startGame}>Start Game</button>
         )}
       </div>
-
-      {/* Start Game Button */}
-      {!playerHand.length && !gameOver && (
-        <button onClick={startGame}>Start Game</button>
-      )}
-    </div>
+    //</div>
   );
+  
+  
 };
 
 export default BlackjackGame;

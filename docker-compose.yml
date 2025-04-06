@@ -30,3 +30,4 @@ services:
       - "5173:5173"
     environment:
       VITE_API_URL: http://localhost:5000
+    command: npm run dev -- --host

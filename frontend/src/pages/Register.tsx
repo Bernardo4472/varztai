@@ -1,6 +1,7 @@
 ﻿import React, { useState } from "react";
 import { registerUser, AuthData, RegisterResponse } from "../services/authService";
 import { useNavigate } from "react-router-dom";
+import styles from "./Styles.module.css";
 
 const Register: React.FC = () => {
   const [username, setUsername] = useState<string>("");
