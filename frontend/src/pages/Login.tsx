@@ -22,7 +22,7 @@ const Login: React.FC = () => {
       localStorage.setItem("balance", res.balance.toString());
 
       console.log("✅ Prisijungta:", res);
-      navigate("/Loby"); // Perkeliame į pagrindinį puslapį
+      navigate("/Lobby"); // Perkeliame į pagrindinį puslapį
     } catch (err: any) {
       setError(err.message || "Nepavyko prisijungti");
     }

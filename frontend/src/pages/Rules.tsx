@@ -2,7 +2,7 @@ import React from "react";
 import "./Styles.css"; 
 import { useNavigate } from "react-router-dom";
 
-const BlackjackRules = () => {
+const BlackjackRules: React.FC = () => {
   const navigate = useNavigate();
 
   return (
@@ -52,7 +52,7 @@ const BlackjackRules = () => {
             <strong>🎉 Blackjack:</strong> Jei iškart gauni tūzą ir 10 taškų kortą – automatinė pergalė, išskyrus atvejį, jei dalintojas taip pat turi Blackjack.
           </p>
 
-          <button className="menu-btn" onClick={() => navigate("/")}>
+          <button className="menu-btn" onClick={() => navigate("/Lobby")}>
             Grįžti į meniu
           </button>
         </div>
