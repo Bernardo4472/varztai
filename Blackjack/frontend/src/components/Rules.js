@@ -3,7 +3,7 @@ import "./Styles.css";
 import { useNavigate } from "react-router-dom";
 
 const BlackjackRules = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate();//dw
 
   return (
     <div className="page_Container">
@@ -58,7 +58,7 @@ const BlackjackRules = () => {
         </div>
       </div>
     </div>
-    </div>
+    </div> 
   );
 };
 
