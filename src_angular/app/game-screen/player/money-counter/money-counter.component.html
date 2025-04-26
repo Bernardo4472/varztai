@@ -1,0 +1,12 @@
+<div class="grid place-items-center table-font">
+  <div class="row-start-1 col-start-1 p-1 whitespace-nowrap">{{ money }} $</div>
+  <div
+    class="row-start-1 col-start-1 pill-popup font-medium"
+    *ngIf="diffValue | async"
+    [class.text-red-600]="(diffValue | async)! < 0"
+    [class.text-green-600]="(diffValue | async)! > 0"
+    data-test="money-popup"
+  >
+    {{ ((diffValue | async)! > 0 ? "+" : "") + (diffValue | async) }} $
+  </div>
+</div>

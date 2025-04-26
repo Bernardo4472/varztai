@@ -1,0 +1,31 @@
+.pill-menu {
+  @apply flex justify-center whitespace-nowrap gap-1 flex-wrap;
+
+  &[disabled] {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  > * {
+    @apply p-2 font-medium px-3 flex-grow rounded-md text-center;
+    background-color: var(--theme-primary-color);
+    min-width: 40px;
+  }
+
+  @screen sm {
+    gap: 2px;
+    flex-wrap: nowrap;
+
+    > * {
+      border-radius: 0px;
+    }
+
+    > *:last-child {
+      @apply rounded-r-full;
+    }
+
+    > *:first-child {
+      @apply rounded-l-full;
+    }
+  }
+}

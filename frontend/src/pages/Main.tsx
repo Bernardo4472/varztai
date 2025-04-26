@@ -3,12 +3,8 @@ import BlackjackGame from '../features/blackjack/components/BlackjackGame';
 //import "./BlackjackGame.css";
 
 const Main = () => {
-  return (
-    <div>
-      <h1>Blackjack</h1>
-      <BlackjackGame />
-    </div>
-  );
+  // Render the BlackjackGame component directly to let its styles control the page
+  return <BlackjackGame />;
 };
 
 export default Main;

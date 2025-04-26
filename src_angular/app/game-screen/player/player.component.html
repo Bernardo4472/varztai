@@ -1,0 +1,89 @@
+<div
+  class="rounded-lg p-1.5 2xl:p-2 bg-neutral-600 grid place-items-center group z-10"
+  [class.opacity-70]="type == 'player' && !player?.ready"
+  [class.primary-border]="isPlayerTurn"
+  [attr.data-cy]="player ? 'player' : null"
+>
+  <div
+    *ngIf="player?.disconnected"
+    class="col-start-1 row-start-1 pill-popup !py-1 scale-50 sm:scale-100"
+  >
+    <mat-icon
+      class="text-yellow-400 align-middle mb-px"
+      matTooltip="Player is disconnected"
+      >warning</mat-icon
+    >
+  </div>
+
+  <div class="flex flex-col col-start-1 row-start-1">
+    <span
+      class="table-font text-center whitespace-nowrap"
+      [attr.data-cy]="player ? 'player-name' : null"
+    >
+      {{ type == "dealer" ? "Dealer" : player?.displayName || "No Player" }}
+    </span>
+
+    <app-money-counter
+      *ngIf="player"
+      [money]="player.money"
+    ></app-money-counter>
+
+    <app-timestamp-progress-bar
+      *ngIf="player"
+      class="scale-y-150"
+      [endTimestamp]="isPlayerTurn ? endTimestamp : 0"
+    ></app-timestamp-progress-bar>
+  </div>
+
+  <button
+    *ngIf="player && clientIsAdmin && !clientIsPlayer && !player.disconnected"
+    mat-mini-fab
+    color="primary"
+    matTooltip="Kick this player."
+    [matTooltipPosition]="'above'"
+    class="mr-auto mb-auto -ml-7 -mt-7 col-start-1 row-start-1 invisible group-hover:visible scale-50 sm:scale-75"
+    (click)="kick.next(player.sessionId)"
+  >
+    <mat-icon>close</mat-icon>
+  </button>
+</div>
+
+<div class="card-holder absolute z-10">
+  <app-hand-score
+    class="absolute left-1/2 -translate-x-1/2 bottom-full"
+    [hand]="hand"
+    *ngIf="!scoreBottom"
+  ></app-hand-score>
+
+  <div class="grid place-items-center">
+    <div
+      *ngIf="player?.roundOutcome || dealerHand?.isBusted"
+      class="z-10 table-font pill-popup col-start-1 row-start-1 whitespace-nowrap text-center"
+      data-cy="roundOutcome"
+    >
+      {{
+        player
+          ? clientIsPlayer
+            ? roundOutcomeToDisplayMessageCurrentPlayer[player.roundOutcome]
+            : roundOutcomeToDisplayMessage[player.roundOutcome]
+          : "Busted"
+      }}
+    </div>
+
+    <div
+      class="flex col-start-1 row-start-1 transition-opacity duration-1000"
+      [class.opacity-80]="player?.roundOutcome || dealerHand?.isBusted"
+    >
+      <div class="hand">
+        <app-card *ngFor="let card of hand?.cards" [card]="card"></app-card>
+      </div>
+      <div style="width: calc(var(--playing-card-width) * 0.5)"></div>
+    </div>
+  </div>
+
+  <app-hand-score
+    class="absolute left-1/2 -translate-x-1/2"
+    [hand]="hand"
+    *ngIf="scoreBottom"
+  ></app-hand-score>
+</div>
