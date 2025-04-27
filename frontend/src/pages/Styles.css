@@ -1,4 +1,4 @@
-﻿body {
+body {
     font-family: Arial, sans-serif;
     background-color: #1e1e2e;
     display: flex;
@@ -43,7 +43,11 @@
 .form-title {
     color: white;
     text-shadow: 2px 2px 2px black;
+    padding-top: 20px;  /* Prideda viršutinį padding */
+    padding-bottom: 20px;  /* Prideda apatinį padding */
+    font-size: 22px; /* Gali padidinti šrifto dydį, jei reikia */
 }
+
 
 .form-icon {
     width: 70px;
