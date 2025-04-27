@@ -1,0 +1,21 @@
+:host {
+  display: grid;
+  place-items: center;
+}
+
+:host > * {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.hand {
+  display: grid;
+  grid-auto-columns: calc(var(--playing-card-width) * 0.5);
+  grid-auto-flow: column;
+}
+
+.primary-border {
+  outline-color: var(--theme-primary-color);
+  outline-width: 2px;
+  outline-style: solid;
+}

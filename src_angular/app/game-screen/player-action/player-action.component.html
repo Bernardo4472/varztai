@@ -1,0 +1,57 @@
+<div class="flex flex-col-reverse sm:flex-col gap-4 m-4">
+  <div class="pill-menu" [attr.disabled]="betMenuDisabled ? true : null">
+    <span class="whitespace-normal">
+      Current Bet:
+      <span
+        class="inline-block text-center"
+        style="width: 4ch"
+        data-cy="bet-value"
+        >{{ currentBet }}</span
+      >
+    </span>
+
+    <span class="whitespace-normal"> Change Bet: </span>
+    <button (click)="changeBet.emit(-50)">- 50</button>
+    <button (click)="changeBet.emit(-10)">- 10</button>
+    <button (click)="changeBet.emit(10)">+ 10</button>
+    <button (click)="changeBet.emit(50)">+ 50</button>
+
+    <button (click)="setBet.emit(+betInput.value)" data-cy="setBet-btn">
+      Set Bet:
+    </button>
+    <input
+      class="w-24"
+      #betInput
+      type="number"
+      [min]="gameConfig.minBet"
+      [max]="gameConfig.maxBet"
+      value="100"
+      appInputConstrain
+      data-cy="bet-input"
+    />
+  </div>
+
+  <div class="pill-menu" *ngIf="!readyMenuHidden">
+    <button style="flex-grow: 100" (click)="readyChange.emit(!ready)">
+      {{ ready ? "Not ready" : "Ready" }}
+    </button>
+    <div class="h-9">
+      <mat-checkbox
+        class="-mt-2.5 mr-4"
+        [checked]="autoReady"
+        (change)="autoReadyChange.emit($event.checked)"
+        matTooltip="Automatically sets player as ready after every round"
+        >Auto Ready</mat-checkbox
+      >
+    </div>
+  </div>
+
+  <div
+    class="pill-menu"
+    *ngIf="readyMenuHidden"
+    [attr.disabled]="stayHitMenuDisabled ? true : null"
+  >
+    <button (click)="stay.emit()">Stay</button>
+    <button (click)="hit.emit()">Hit</button>
+  </div>
+</div>

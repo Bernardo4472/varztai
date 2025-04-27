@@ -3,9 +3,9 @@ import http from "http";
 import cors from "cors";
 import dotenv from "dotenv";
 import { Server } from "socket.io";
-import gamesRoute from "./routes/gameRoutes";
-import authRoutes from "./routes/authRoutes";
-import playersRoutes from "./routes/playerRoutes";
+import gamesRoute from "./routes/game/gameRoutes";
+import authRoutes from "./routes/auth/authRoutes";
+import playersRoutes from "./routes/players/playerRoutes";
 
 dotenv.config();
 
@@ -32,7 +32,7 @@ io.on("connection", (socket) => {
   });
 });
 
-const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
+const PORT = Number(process.env.PORT) || 5000;
+server.listen(PORT, "0.0.0.0", () => {
   console.log(`✅ Serveris paleistas ant ${PORT} porto`);
 });

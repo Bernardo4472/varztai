@@ -1,0 +1,58 @@
+::ng-deep :root {
+  --playing-card-width: calc(var(--table-unit) * 0.15);
+}
+
+.card-container {
+  width: var(--playing-card-width);
+  perspective: calc(var(--playing-card-width) * 5);
+  aspect-ratio: 10/14;
+
+  font-size: calc(var(--playing-card-width) * 0.3);
+  line-height: calc(var(--playing-card-width) * 0.3);
+}
+
+.card {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  @apply text-neutral-800;
+}
+
+.card-face {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  backface-visibility: hidden;
+  box-shadow: 2px 2px 4px 2px rgba(0, 0, 0, 0.2);
+  border-radius: calc(var(--playing-card-width) * 0.1);
+  @apply bg-neutral-100;
+}
+
+.card-face-back {
+  @extend .card-face;
+  transform: rotateY(180deg);
+}
+
+.top-left {
+  position: absolute;
+  top: 0.5em;
+  left: 0.8em;
+}
+
+.bottom-right {
+  position: absolute;
+  bottom: 0.5em;
+  right: 0.8em;
+  rotate: 180deg;
+}
+
+.card-suit,
+.card-value {
+  text-align: center;
+  transform: translate(-50%, 0);
+}
+
+.card-suit {
+  font-family: "Noto Sans Symbols 2", sans-serif;
+}

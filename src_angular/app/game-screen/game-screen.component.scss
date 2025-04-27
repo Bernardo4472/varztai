@@ -1,0 +1,154 @@
+@use "sass:math";
+
+@mixin cardTransform($offset-x, $offset-y, $angle) {
+  transform: translate(
+    calc(
+      (-50% - var(--table-unit) * $offset-x) *
+        math.round(math.cos($angle * 1deg))
+    ),
+    calc(
+      (-50% - var(--table-unit) * $offset-y) *
+        math.round(math.sin($angle * 1deg))
+    )
+  );
+}
+
+//First argument should be gameConfig.maxClients + 1
+@mixin playingTable($players-count, $min-height, $default-height, $max-width) {
+  //Set global variables
+  @at-root ::ng-deep :root {
+    --playing-table-aspect-ratio: 2/1;
+    --table-unit: clamp(
+      #{$min-height},
+      #{$default-height},
+      #{$max-width} / var(--playing-table-aspect-ratio)
+    );
+  }
+
+  position: relative;
+  border-radius: 100%;
+
+  aspect-ratio: var(--playing-table-aspect-ratio);
+  height: var(--table-unit);
+
+  > * {
+    position: absolute;
+
+    $angleStep: calc(360 / $players-count);
+    $angle: 270;
+
+    @for $i from 1 through $players-count {
+      &:nth-child(#{$i}) {
+        left: calc(50% * math.cos($angle * 1deg) + 50%);
+        top: calc(50% * math.sin($angle * 1deg) + 50%);
+        transform: translate(-50%, -50%);
+        z-index: 10;
+
+        //Used for card enter/leave animations
+        --card-translation-x: #{calc(-100% * math.cos($angle * 1deg))};
+        --card-translation-y: #{calc(-100% * math.sin($angle * 1deg))};
+
+        //Sets the initial cards position
+        ::ng-deep .card-holder {
+          @include cardTransform(0.17, 0.12, $angle);
+
+          @screen 2xl {
+            @include cardTransform(0.11, 0.09, $angle);
+          }
+        }
+      }
+
+      $angle: $angle + $angleStep;
+    }
+  }
+}
+
+@mixin playingTableMobile($players-count, $width) {
+  $table-unit: 210px;
+  $player-row-height: $table-unit * 0.45;
+  $non-player-row-height: $table-unit * 0.3;
+
+  @at-root ::ng-deep :root {
+    --table-unit: #{$table-unit};
+  }
+
+  height: ($players-count - 2) * $non-player-row-height + 2 * $player-row-height;
+
+  position: relative;
+  width: $width;
+  border-radius: 32px;
+
+  > * {
+    position: absolute;
+
+    @for $i from 1 through $players-count {
+      &:nth-child(#{$i}) {
+        @if $i == 1 {
+          top: 0%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          --card-translation-y: 100%;
+          --card-translation-x: 0%;
+        } @else if $i == $players-count {
+          top: 100%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          --card-translation-y: -100%;
+          --card-translation-x: 0%;
+        } @else {
+          left: ($i - 1) %2 * 100%;
+          top: calc($player-row-height + ($i - 2) * $non-player-row-height);
+          transform: translate(-50%);
+          --card-translation-y: 0%;
+          --card-translation-x: #{100% - ($i - 1) %2 * 200%};
+        }
+
+        //Sets the initial cards position
+        ::ng-deep .card-holder {
+          @if $i == 1 {
+            transform: translateY(calc(50% + 23px));
+          } @else if $i == $players-count {
+            transform: translateY(calc(-50% - 45px));
+          } @else if $i % 2 == 0 {
+            transform: translateX(calc(-50% - $table-unit * 0.2));
+          } @else {
+            transform: translateX(calc(50% + $table-unit * 0.2));
+          }
+        }
+      }
+    }
+  }
+}
+
+.player-holder {
+  @apply bg-green-600;
+
+  @media (not (min-width: 640px)) {
+    @include playingTableMobile(8, 75vw);
+  }
+
+  @screen sm {
+    @include playingTable(8, 250px, "100vh - 300px", 85vw);
+  }
+}
+
+//Create font sizes that are relative to playing table size
+::ng-deep .table-font-xl {
+  font-size: calc(var(--table-unit) * 0.08);
+  line-height: calc(var(--table-unit) * 0.12);
+}
+
+::ng-deep .table-font-lg {
+  font-size: calc(var(--table-unit) * 0.04);
+  line-height: calc(var(--table-unit) * 0.06);
+}
+
+::ng-deep .table-font {
+  font-size: calc(var(--table-unit) * 0.04);
+  line-height: calc(var(--table-unit) * 0.06);
+
+  @screen 2xl {
+    font-size: calc(var(--table-unit) * 0.024);
+    line-height: calc(var(--table-unit) * 0.036);
+  }
+}

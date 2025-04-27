@@ -1,0 +1,310 @@
+/* Base container for the whole game screen */
+.gameScreen {
+    display: flex;
+    flex-direction: column; /* Stack table and controls vertically */
+    justify-content: center; /* Center vertically */
+    align-items: center; /* Center horizontally */
+    min-height: 100vh;
+    background-color: #1e1e2e; /* Dark Purple/Violet background */
+    /* background-image removed */
+    /* background-size removed */
+    font-family: 'Georgia', serif; /* Font similar to the image */
+    color: #eee; /* Light text color */
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* The main oval green table */
+.gameTable {
+    position: relative;
+    width: 85vw; /* Responsive width */
+    max-width: 1000px; /* Max width */
+    height: 55vh; /* Responsive height */
+    max-height: 600px; /* Max height */
+    background-color: #2e7d32; /* Green table color */
+    border-radius: 50%; /* Creates the oval shape */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 0, 0, 0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 40px;
+    box-sizing: border-box;
+}
+
+/* Central text area */
+.tableCenterText {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.8);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+}
+
+.tableCenterText h2 {
+    font-size: 2.5rem;
+    margin: 0;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+.tableCenterText p {
+    font-size: 1.2rem;
+    margin-top: 200px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+/* Player/Dealer spots */
+.playerSpot {
+    position: absolute;
+    background-color: rgba(30, 30, 46, 0.5); /* Darker violet transparent */
+    padding: 10px 15px;
+    border-radius: 8px;
+    color: #ccc;
+    font-size: 0.9rem;
+    text-align: center;
+    min-width: 100px;
+    z-index: 2; /* Above table, below cards */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+.dealerSpot {
+    top: 5%;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.playerSelfSpot { /* Your spot */
+    bottom: 5%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(30, 30, 46, 0.7); /* Slightly more opaque violet for self */
+    color: #fff;
+    font-weight: bold;
+}
+
+.playerSelfSpot .balance {
+    font-size: 0.8rem;
+    color: #ddd;
+    margin-top: 3px;
+}
+
+/* Positioning for other player spots (adjust percentages as needed) */
+.playerOtherSpot1 { top: 20%; left: 15%; transform: translateX(-50%); }
+.playerOtherSpot2 { top: 20%; right: 15%; transform: translateX(50%); }
+.playerOtherSpot3 { top: 50%; left: 5%; transform: translate(-50%, -50%); }
+.playerOtherSpot4 { top: 50%; right: 5%; transform: translate(50%, -50%); }
+.playerOtherSpot5 { bottom: 20%; left: 15%; transform: translateX(-50%); }
+.playerOtherSpot6 { bottom: 20%; right: 15%; transform: translateX(50%); }
+
+
+/* Hand container (for cards) - positioned relative to player spots */
+.handContainer {
+    position: absolute;
+    display: flex;
+    min-height: 80px; /* Ensure space for cards */
+    z-index: 3; /* Above player spots */
+}
+
+.dealerHand {
+    top: 15%; /* Below dealer spot */
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.playerSelfHand {
+    bottom: 15%; /* Above player spot */
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Card Styling */
+.card {
+    width: 60px; /* Slightly larger cards */
+    height: 90px;
+    margin: 0 -15px; /* Overlap cards slightly */
+    display: inline-block; /* Changed from flex */
+    background-color: white;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease;
+    position: relative; /* Needed for overlap */
+}
+
+.card:hover {
+    transform: translateY(-10px);
+    z-index: 10; /* Bring hovered card to front */
+}
+
+.card img {
+    width: 100%;
+    height: 100%;
+    display: block; /* Remove extra space below image */
+    border-radius: 5px;
+}
+
+/* Betting and Controls Area (below the table) */
+.controlsArea {
+    margin-top: 30px; /* Space between table and controls */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center children (like betting/ready blocks) horizontally */
+    width: fit-content; /* Size based on content */
+    max-width: 90%; /* Prevent it getting too wide, relative to viewport */
+    /* The parent (.gameScreen) centers this block */
+}
+
+/* Updated Betting Controls Container */
+.bettingControls {
+    display: inline-flex; /* Use inline-flex to size based on content */
+    align-items: stretch; /* Make items fill height */
+    justify-content: center;
+    background-color: #880e4f; /* Pink/Maroon base color */
+    border-radius: 25px; /* Rounded ends */
+    margin-bottom: 15px;
+    overflow: hidden; /* Keep borders neat */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+}
+
+/* Style for each section within betting controls */
+.betSection {
+    display: flex;
+    align-items: center;
+    padding: 8px 15px; /* Consistent padding */
+    color: #eee;
+    font-size: 0.9rem;
+    border-right: 1px solid rgba(0, 0, 0, 0.2); /* Divider */
+    white-space: nowrap; /* Prevent text wrapping */
+}
+
+.betSection:last-child {
+    border-right: none; /* No divider on the last item */
+}
+
+/* Specific style for the bet amount display */
+.betAmountDisplay {
+    font-weight: bold;
+    margin-left: 5px; /* Space after "Current Bet:" */
+    min-width: 30px; /* Ensure some space */
+    text-align: right;
+}
+
+/* Buttons within the betting controls */
+.betChangeButton {
+    background-color: transparent; /* Match container */
+    color: #eee;
+    border: none;
+    padding: 8px 12px; /* Adjust padding */
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease;
+}
+
+.betChangeButton:hover {
+    background-color: rgba(0, 0, 0, 0.15); /* Subtle hover */
+}
+
+.betChangeButton:disabled {
+    color: #aaa;
+    cursor: not-allowed;
+    background-color: transparent;
+}
+
+
+/* Ready Controls (Keep previous style or adjust if needed) */
+.readyControls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(30, 30, 46, 0.5); /* Darker violet transparent */
+    padding: 10px 20px;
+    border-radius: 8px; /* Can adjust to match betting controls if desired */
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.readyControls button, .readyControls label {
+    margin: 5px 10px;
+    color: #eee;
+}
+
+/* General Button Styles (can be base for bet/ready) */
+.betButton, .readyButton {
+    padding: 8px 15px;
+    font-size: 0.9rem;
+    background-color: #880e4f; /* Pink/Maroon color */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.betButton:hover, .readyButton:hover {
+    background-color: #ad1457; /* Lighter pink on hover */
+}
+
+.betButton:disabled, .readyButton:disabled {
+    background-color: #555;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.setBetDisplay {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 5px 10px;
+    border-radius: 4px;
+    min-width: 50px;
+    text-align: center;
+}
+
+.readyControls label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.readyControls input[type="checkbox"] {
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+/* Room ID Display */
+.roomIdDisplay {
+    margin-top: 20px;
+    font-size: 0.9rem;
+    color: #aaa;
+}
+
+/* Game Over/Result Text (can reuse existing or adapt) */
+.resultText {
+    font-size: 1.5rem;
+    text-align: center;
+    color: #ffeb3b; /* Yellowish for results */
+    margin-top: 20px;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+/* Hide default actions if using new controls */
+.actions {
+    display: none; /* Hide the old Hit/Stand buttons if replacing */
+}
+
+.backButton {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    padding: 8px 15px;
+    font-size: 0.9rem;
+    background-color: #880e4f; /* Pink/Maroon color */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}

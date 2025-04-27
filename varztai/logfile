@@ -1,0 +1,6 @@
+2025-03-21 21:50:34.066 EET [363] LOG:  redirecting log output to logging collector process
+2025-03-21 21:50:34.066 EET [363] HINT:  Future log output will appear in directory "log".
+2025-03-21 21:52:02.372 EET [381] LOG:  redirecting log output to logging collector process
+2025-03-21 21:52:02.372 EET [381] HINT:  Future log output will appear in directory "log".
+2025-03-21 21:56:36.171 EET [415] LOG:  redirecting log output to logging collector process
+2025-03-21 21:56:36.171 EET [415] HINT:  Future log output will appear in directory "log".
