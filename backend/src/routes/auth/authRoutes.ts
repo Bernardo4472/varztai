@@ -23,9 +23,10 @@ router.post("/register", async (req: Request, res: Response): Promise<any> => {
       return res.status(400).json({ message: "Blogas el. pašto formatas" });
     }
     const hashedPassword = await bcrypt.hash(password, 10);
+    // Add balance to the INSERT statement with a default value of 1000
     await db.query(
-      "INSERT INTO users (username, email, password) VALUES ($1, $2, $3)",
-      [username, email, hashedPassword]
+      "INSERT INTO users (username, email, password, balance) VALUES ($1, $2, $3, $4)",
+      [username, email, hashedPassword, 1000] // Set initial balance to 1000
     );
 
     res.status(201).json({ message: "Registracija sėkminga!" });
