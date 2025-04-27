@@ -11,6 +11,10 @@ services:
     ports:
       - "5432:5432"
     volumes:
+      # šita eilutė sujungia tavo projecto katalogą my_local_data
+      # su Postgres data direktorija
+      - ./my_local_data:/var/lib/postgresql/data
+      # ir, jeigu reikia, lieka tavo init skriptai:
       - ./database:/docker-entrypoint-initdb.d
 
   backend:

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import styles from "./BlackjackGame.module.css";
 import { useAuth } from '../../../context/AuthContext'; // Import useAuth hook
-import { getPlayerDetails, updatePlayerBalance } from '../../../services/playerService'; // Adjust path if needed
+// Import ALL necessary service functions
+import { getPlayerDetails, updatePlayerBalance, updatePlayerStats } from '../../../services/playerService';
 
 // Define types for our card and game state
 interface Card {
@@ -99,7 +100,6 @@ const BlackjackGame: React.FC = () => {
     setDeck(shuffleDeck(createDeck()));
     setPlayerHand([]); setDealerHand([]); setGameOver(false);
     setGameMessage("Place your bet!"); setIsReady(false); setLockedBet(null);
-    // Reset bet clamped between MIN_BET and playerBalance
     const newBetOnRoundStart = Math.max(MIN_BET, Math.min(DEFAULT_BET, playerBalance));
     console.log(`DEBUG: startNewRound - Setting currentBet to: ${newBetOnRoundStart} (Balance: ${playerBalance})`);
     setCurrentBet(newBetOnRoundStart);
@@ -153,29 +153,34 @@ const BlackjackGame: React.FC = () => {
     let roundMessage = ""; let balanceChange = 0; const currentLockedBet = lockedBet ?? 0;
     const playerHasBlackjack = playerTotal === 21 && pHand.length === 2;
     const dealerHasBlackjack = dealerTotal === 21 && dHand.length === 2;
+    let resultType: 'win' | 'loss' | 'push' = 'push'; // For stats
 
-    if (playerHasBlackjack && dealerHasBlackjack) { roundMessage = "Push! Both Blackjack!"; balanceChange = 0; }
-    else if (playerHasBlackjack) { roundMessage = "Blackjack! You win!"; playSound('win.wav'); balanceChange = Math.floor(currentLockedBet * 1.5); }
-    else if (dealerHasBlackjack) { roundMessage = "Dealer Blackjack! Dealer wins!"; playSound('lose.wav'); balanceChange = -currentLockedBet; }
-    else if (playerTotal > 21) { roundMessage = "You busted! Dealer wins!"; playSound('lose.wav'); balanceChange = -currentLockedBet; }
-    else if (dealerTotal > 21) { roundMessage = "Dealer busted! You win!"; playSound('win.wav'); balanceChange = currentLockedBet; }
-    else if (playerTotal > dealerTotal) { roundMessage = "You win!"; playSound('win.wav'); balanceChange = currentLockedBet; }
-    else if (playerTotal < dealerTotal) { roundMessage = "Dealer wins!"; playSound('lose.wav'); balanceChange = -currentLockedBet; }
-    else { roundMessage = "It's a push (tie)!"; balanceChange = 0; }
+    if (playerHasBlackjack && dealerHasBlackjack) { roundMessage = "Push! Both Blackjack!"; balanceChange = 0; resultType = 'push'; }
+    else if (playerHasBlackjack) { roundMessage = "Blackjack! You win!"; playSound('win.wav'); balanceChange = Math.floor(currentLockedBet * 1.5); resultType = 'win'; }
+    else if (dealerHasBlackjack) { roundMessage = "Dealer Blackjack! Dealer wins!"; playSound('lose.wav'); balanceChange = -currentLockedBet; resultType = 'loss'; }
+    else if (playerTotal > 21) { roundMessage = "You busted! Dealer wins!"; playSound('lose.wav'); balanceChange = -currentLockedBet; resultType = 'loss'; }
+    else if (dealerTotal > 21) { roundMessage = "Dealer busted! You win!"; playSound('win.wav'); balanceChange = currentLockedBet; resultType = 'win'; }
+    else if (playerTotal > dealerTotal) { roundMessage = "You win!"; playSound('win.wav'); balanceChange = currentLockedBet; resultType = 'win'; }
+    else if (playerTotal < dealerTotal) { roundMessage = "Dealer wins!"; playSound('lose.wav'); balanceChange = -currentLockedBet; resultType = 'loss'; }
+    else { roundMessage = "It's a push (tie)!"; balanceChange = 0; resultType = 'push'; }
 
     setGameMessage(roundMessage);
 
-    if (userId && token && balanceChange !== 0) {
-      updatePlayerBalance(userId, balanceChange, token)
-        .then(response => {
-            // Ensure balance from response is treated as a number
-            const updatedBalance = Number(response.data.balance);
-            setPlayerBalance(updatedBalance);
-            console.log("Balance updated successfully:", updatedBalance);
-        })
-        .catch(err => { console.error("Balance update failed:", err); setError("Balance update failed."); });
-    } else if (balanceChange === 0) { console.log("Balance unchanged."); }
-    else { console.error("Cannot update balance: Auth missing."); setError("Auth error."); }
+    if (userId && token) {
+        // Update Stats
+        updatePlayerStats(userId, resultType, token)
+            .then(statsResponse => console.log("Stats updated:", statsResponse.data))
+            .catch(err => { console.error("Stats update failed:", err); setError("Stats update failed."); });
+
+        // Update Balance (if changed)
+        if (balanceChange !== 0) {
+            updatePlayerBalance(userId, balanceChange, token)
+                .then(balanceResponse => setPlayerBalance(Number(balanceResponse.data.balance)))
+                .catch(err => { console.error("Balance update failed:", err); setError("Balance update failed."); });
+        } else {
+             console.log("Balance unchanged.");
+        }
+    } else { console.error("Cannot update balance/stats: Auth missing."); setError("Auth error."); }
   };
 
   // --- Betting Actions ---
@@ -238,11 +243,9 @@ const BlackjackGame: React.FC = () => {
       setIsLoadingData(true); setError(null);
       getPlayerDetails(userId, token)
         .then(data => {
-            // Ensure fetched balance is treated as a number
             const fetchedBalance = Number(data.balance);
             setPlayerBalance(fetchedBalance);
             setPlayerName(data.username || "Player");
-            // Set initial bet clamped correctly using the numeric balance
             const initialBet = Math.max(MIN_BET, Math.min(DEFAULT_BET, fetchedBalance));
             console.log(`DEBUG: useEffect - Fetched Balance: ${fetchedBalance}, Setting initial currentBet to: ${initialBet}`);
             setCurrentBet(initialBet);
@@ -258,7 +261,7 @@ const BlackjackGame: React.FC = () => {
       console.log("Ready state triggered dealing.");
       dealInitialCards();
     }
-  }, [isReady, gameOver, lockedBet, playerHand.length]); // Note: dealInitialCards is stable
+  }, [isReady, gameOver, lockedBet, playerHand.length]);
 
   // --- Loading & Error States ---
   if (isAuthLoading || isLoadingData) return <div className={styles.gameScreen}>Loading...</div>;
@@ -269,32 +272,18 @@ const BlackjackGame: React.FC = () => {
   const renderControls = () => {
     // Betting Phase
     if (!gameOver && lockedBet === null && playerHand.length === 0) {
-        // Add diagnostic logging here
-        console.log("DEBUG: RenderControls - Betting Phase Active", {
-            currentBet,
-            playerBalance, // Should be number now
-            lockedBet,
-            gameOver,
-            playerHandLength: playerHand.length,
-            // Evaluate disabled conditions directly for logging
-            disableMinus50: lockedBet !== null || currentBet <= 50,
-            disableMinus10: lockedBet !== null || currentBet <= MIN_BET,
-            disablePlus10: lockedBet !== null || playerBalance === null || currentBet + 10 > Number(playerBalance), // Explicit cast
-            disablePlus50: lockedBet !== null || playerBalance === null || currentBet + 50 > Number(playerBalance), // Explicit cast
-            disableSetBet: lockedBet !== null || playerBalance === null || currentBet < MIN_BET || currentBet > Number(playerBalance) // Explicit cast
-        });
+      console.log("DEBUG: RenderControls - Betting Phase Active", { currentBet, playerBalance });
       return (
         <>
           <div className={styles.bettingControls}>
             <div className={styles.betSection}>Current Bet: <span className={styles.betAmountDisplay}>{currentBet}$</span></div>
             <div className={styles.betSection}>Change Bet:</div>
-            {/* Refined disabled logic */}
-            <div className={styles.betSection}><button className={styles.betChangeButton} onClick={() => changeBet(-50)} disabled={lockedBet !== null || currentBet <= 50}>- 50</button></div>
-            <div className={styles.betSection}><button className={styles.betChangeButton} onClick={() => changeBet(-10)} disabled={lockedBet !== null || currentBet <= MIN_BET}>- 10</button></div>
-            {/* Explicitly cast playerBalance to Number in disabled checks */}
-            <div className={styles.betSection}><button className={styles.betChangeButton} onClick={() => changeBet(10)} disabled={lockedBet !== null || playerBalance === null || currentBet + 10 > Number(playerBalance)}>+ 10</button></div>
-            <div className={styles.betSection}><button className={styles.betChangeButton} onClick={() => changeBet(50)} disabled={lockedBet !== null || playerBalance === null || currentBet + 50 > Number(playerBalance)}>+ 50</button></div>
-            <div className={styles.betSection}><button className={styles.betChangeButton} onClick={handleSetBet} disabled={lockedBet !== null || playerBalance === null || currentBet < MIN_BET || currentBet > Number(playerBalance)}>Set Bet: {currentBet}$</button></div>
+            {/* Simplified disabled logic */}
+            <div className={styles.betSection}><button className={styles.betChangeButton} onClick={() => changeBet(-50)} disabled={currentBet <= 50}>- 50</button></div>
+            <div className={styles.betSection}><button className={styles.betChangeButton} onClick={() => changeBet(-10)} disabled={currentBet <= MIN_BET}>- 10</button></div>
+            <div className={styles.betSection}><button className={styles.betChangeButton} onClick={() => changeBet(10)} disabled={playerBalance === null || currentBet + 10 > playerBalance}>+ 10</button></div>
+            <div className={styles.betSection}><button className={styles.betChangeButton} onClick={() => changeBet(50)} disabled={playerBalance === null || currentBet + 50 > playerBalance}>+ 50</button></div>
+            <div className={styles.betSection}><button className={styles.betChangeButton} onClick={handleSetBet} disabled={playerBalance === null || currentBet < MIN_BET || currentBet > playerBalance}>Set Bet: {currentBet}$</button></div>
           </div>
           <div className={styles.readyControls}><span style={{ color: '#aaa' }}>Set your bet.</span></div>
         </>
