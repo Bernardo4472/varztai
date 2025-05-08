@@ -1,28 +1,44 @@
 import React, { useState, useEffect } from 'react';
 import styles from "./BlackjackGame.module.css";
-import { useAuth } from '../../../context/AuthContext'; // Import useAuth hook
-// Import ALL necessary service functions
-import { getPlayerDetails, updatePlayerBalance, updatePlayerStats } from '../../../services/playerService';
+// Removed useAuth and getPlayerDetails as we rely on gameState now
+// import { useAuth } from '../../../context/AuthContext';
+// import { getPlayerDetails } from '../../../services/playerService';
+import { BlackjackGameState, PlayerGameState, Card as GameCard } from '../../../types/gameTypes'; // Use types from frontend
 
-// Define types for our card and game state
-interface Card {
-  suit: string;
-  rank: string;
+// Define Props interface
+interface BlackjackGameProps {
+  gameState: BlackjackGameState;
+  myPlayerId: string | null;
+  roomId?: string; // Optional, for display
+  onPlayerAction: (action: { actionType: string; payload?: any }) => void;
 }
 
 // --- Constants ---
-const MOCK_ROOM_ID = "AFJA"; // Keep Room ID for now
-const MIN_BET = 10;
-const DEFAULT_BET = 50;
-// --- End Constants ---
+const DEFAULT_BET = 10; // Default for the input field, maybe use gameState.minBet
 
-// Card component
-const CardComponent: React.FC<{ card: Card | 'back' }> = ({ card }) => {
+// Card component using GameCard type from import
+// Helper to map backend suit codes to frontend/filename suits
+const suitMap: { [key: string]: string } = {
+  H: 'Hearts',
+  D: 'Diamond',
+  C: 'Clubs',
+  S: 'Spades',
+};
+
+const CardComponent: React.FC<{ card: GameCard | 'back' }> = ({ card }) => {
   if (!card) return null;
-  const imagePath = card === 'back' ? `/images/back.png` : `/images/${card.suit}-${card.rank}.png`;
+  
+  // Map rank 'T' to '10' for filename consistency
+  const fileRank = (card !== 'back' && card.rank === 'T') ? '10' : (card !== 'back' ? card.rank : '');
+  // Map backend suit ('H', 'D', etc.) to full name ('Hearts', 'Diamond', etc.)
+  const fileSuit = (card !== 'back' && suitMap[card.suit]) ? suitMap[card.suit] : (card !== 'back' ? card.suit : ''); // Fallback just in case
+
+  // Use mapped suit and rank for the image path
+  const imagePath = card === 'back' ? `/images/back.png` : `/images/${fileSuit}-${fileRank}.png`;
+  
   return (
     <div className={styles.card}>
-      <img src={imagePath} alt={card === 'back' ? 'Card Back' : `${card.suit}-${card.rank}`} />
+      <img src={imagePath} alt={card === 'back' ? 'Card Back' : `${card.suit}-${card.rank}`} style={{ width: '100%', height: 'auto' }}/>
     </div>
   );
 };
@@ -33,295 +49,241 @@ const playSound = (soundFile: string): void => {
   sound.play().catch(e => console.error("Error playing sound:", e));
 };
 
-// Blackjack Game component
-const BlackjackGame: React.FC = () => {
-  // --- Auth State ---
-  const { user, token, isLoading: isAuthLoading } = useAuth();
-  const userId = user?.id;
+// Blackjack Game component accepting props
+const BlackjackGame: React.FC<BlackjackGameProps> = ({
+  gameState,
+  myPlayerId,
+  roomId,
+  onPlayerAction
+}) => {
 
-  // --- Game State ---
-  const suits = ['Hearts', 'Diamond', 'Clubs', 'Spades'];
-  const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-  const [deck, setDeck] = useState<Card[]>([]);
-  const [playerHand, setPlayerHand] = useState<Card[]>([]);
-  const [dealerHand, setDealerHand] = useState<Card[]>([]);
-  const [gameOver, setGameOver] = useState<boolean>(true);
-  const [gameMessage, setGameMessage] = useState<string>("Start a new game to play!");
+  // --- Local UI State ---
+  const [betAmountInput, setBetAmountInput] = useState<string>(String(gameState.minBet || DEFAULT_BET));
+  const [error, setError] = useState<string | null>(null); // Keep for local UI errors
 
-  // --- Player & Betting State ---
-  const [currentBet, setCurrentBet] = useState<number>(DEFAULT_BET);
-  const [isReady, setIsReady] = useState<boolean>(false);
-  const [isAutoReady, setIsAutoReady] = useState<boolean>(false);
-  const [lockedBet, setLockedBet] = useState<number | null>(null);
-  const [playerBalance, setPlayerBalance] = useState<number | null>(null);
-  const [playerName, setPlayerName] = useState<string>("");
-  const [isLoadingData, setIsLoadingData] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  // Update bet input default when minBet changes (e.g., first gameState received)
+  useEffect(() => {
+    setBetAmountInput(String(gameState.minBet || DEFAULT_BET));
+  }, [gameState.minBet]);
 
-  // --- Deck and Hand Logic ---
-  const createDeck = (): Card[] => {
-    const newDeck: Card[] = [];
-    suits.forEach(suit => { ranks.forEach(rank => { newDeck.push({ rank, suit }); }); });
-    return newDeck;
-  };
-
-  const shuffleDeck = (deckToShuffle: Card[]): Card[] => {
-    let shuffledDeck = [...deckToShuffle];
-    for (let i = shuffledDeck.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffledDeck[i], shuffledDeck[j]] = [shuffledDeck[j], shuffledDeck[i]];
-    }
-    return shuffledDeck;
-  };
-
-  const drawCard = (currentDeck: Card[]): { card: Card | null, updatedDeck: Card[] } => {
-    if (currentDeck.length === 0) { console.warn("Deck empty."); return { card: null, updatedDeck: [] }; }
-    const deckCopy = [...currentDeck];
-    const card = deckCopy.pop() as Card;
-    return { card, updatedDeck: deckCopy };
-  };
-
-  const calculateHandValue = (hand: Card[]): number => {
-    let total = 0; let aceCount = 0;
-    hand.forEach(card => {
-      if (!card) return;
-      if (card.rank === 'A') { total += 11; aceCount += 1; }
-      else if (['K', 'Q', 'J'].includes(card.rank)) { total += 10; }
-      else { total += parseInt(card.rank, 10); }
-    });
-    while (total > 21 && aceCount > 0) { total -= 10; aceCount -= 1; }
-    return total;
-  };
-
-  // --- Game Actions ---
-  const startNewRound = (): void => {
-    if (playerBalance === null) { setError("Cannot start: Balance not loaded."); return; }
-    playSound('button-click.mp3');
-    setDeck(shuffleDeck(createDeck()));
-    setPlayerHand([]); setDealerHand([]); setGameOver(false);
-    setGameMessage("Place your bet!"); setIsReady(false); setLockedBet(null);
-    const newBetOnRoundStart = Math.max(MIN_BET, Math.min(DEFAULT_BET, playerBalance));
-    console.log(`DEBUG: startNewRound - Setting currentBet to: ${newBetOnRoundStart} (Balance: ${playerBalance})`);
-    setCurrentBet(newBetOnRoundStart);
-  };
-
-  const dealInitialCards = (): void => {
-    let currentDeck = deck; let pHand: Card[] = []; let dHand: Card[] = [];
-    let card1, card2, card3, card4;
-    ({ card: card1, updatedDeck: currentDeck } = drawCard(currentDeck));
-    ({ card: card2, updatedDeck: currentDeck } = drawCard(currentDeck));
-    ({ card: card3, updatedDeck: currentDeck } = drawCard(currentDeck));
-    ({ card: card4, updatedDeck: currentDeck } = drawCard(currentDeck));
-    if (card1) pHand.push(card1); if (card2) dHand.push(card2);
-    if (card3) pHand.push(card3); if (card4) dHand.push(card4);
-    setDeck(currentDeck); setPlayerHand(pHand); setDealerHand(dHand); setGameMessage("");
-    if (calculateHandValue(pHand) === 21) { console.log("Player Blackjack!"); }
-  };
-
+  // --- Game Actions (Use onPlayerAction prop) ---
   const hit = (): void => {
-    if (gameOver || lockedBet === null || playerHand.length === 0) return;
     playSound('card-draw.mp3');
-    const { card, updatedDeck } = drawCard(deck);
-    if (card) {
-      const newPlayerHand = [...playerHand, card];
-      setPlayerHand(newPlayerHand); setDeck(updatedDeck);
-      if (calculateHandValue(newPlayerHand) > 21) { determineWinner(newPlayerHand, dealerHand); setGameOver(true); }
-    }
+    onPlayerAction({ actionType: 'HIT' });
   };
 
   const stand = (): void => {
-    if (gameOver || lockedBet === null || playerHand.length === 0) return;
     playSound('button-click.mp3');
-    dealerTurn(deck, dealerHand, playerHand);
+    onPlayerAction({ actionType: 'STAND' });
   };
 
-  const dealerTurn = (currentDeck: Card[], currentDealerHand: Card[], currentPlayerHand: Card[]): void => {
-    let hand = [...currentDealerHand]; let deckAfterDraws = [...currentDeck];
-    let dealerTotal = calculateHandValue(hand);
-    while (dealerTotal < 17) {
-      playSound('card-draw.mp3');
-      const { card, updatedDeck } = drawCard(deckAfterDraws);
-      if (!card) break;
-      hand = [...hand, card]; dealerTotal = calculateHandValue(hand); deckAfterDraws = updatedDeck;
-    }
-    setDealerHand(hand); setDeck(deckAfterDraws); playSound('dealer-turn.mp3');
-    determineWinner(currentPlayerHand, hand); setGameOver(true);
+  const doubleDown = (): void => {
+    // Optional: Add sound effect for double down
+    playSound('button-click.mp3'); // Reuse click sound or add specific one
+    onPlayerAction({ actionType: 'DOUBLE_DOWN' });
   };
 
-  const determineWinner = (pHand: Card[], dHand: Card[]): void => {
-    const playerTotal = calculateHandValue(pHand); const dealerTotal = calculateHandValue(dHand);
-    let roundMessage = ""; let balanceChange = 0; const currentLockedBet = lockedBet ?? 0;
-    const playerHasBlackjack = playerTotal === 21 && pHand.length === 2;
-    const dealerHasBlackjack = dealerTotal === 21 && dHand.length === 2;
-    let resultType: 'win' | 'loss' | 'push' = 'push'; // For stats
-
-    if (playerHasBlackjack && dealerHasBlackjack) { roundMessage = "Push! Both Blackjack!"; balanceChange = 0; resultType = 'push'; }
-    else if (playerHasBlackjack) { roundMessage = "Blackjack! You win!"; playSound('win.wav'); balanceChange = Math.floor(currentLockedBet * 1.5); resultType = 'win'; }
-    else if (dealerHasBlackjack) { roundMessage = "Dealer Blackjack! Dealer wins!"; playSound('lose.wav'); balanceChange = -currentLockedBet; resultType = 'loss'; }
-    else if (playerTotal > 21) { roundMessage = "You busted! Dealer wins!"; playSound('lose.wav'); balanceChange = -currentLockedBet; resultType = 'loss'; }
-    else if (dealerTotal > 21) { roundMessage = "Dealer busted! You win!"; playSound('win.wav'); balanceChange = currentLockedBet; resultType = 'win'; }
-    else if (playerTotal > dealerTotal) { roundMessage = "You win!"; playSound('win.wav'); balanceChange = currentLockedBet; resultType = 'win'; }
-    else if (playerTotal < dealerTotal) { roundMessage = "Dealer wins!"; playSound('lose.wav'); balanceChange = -currentLockedBet; resultType = 'loss'; }
-    else { roundMessage = "It's a push (tie)!"; balanceChange = 0; resultType = 'push'; }
-
-    setGameMessage(roundMessage);
-
-    if (userId && token) {
-        // Update Stats
-        updatePlayerStats(userId, resultType, token)
-            .then(statsResponse => console.log("Stats updated:", statsResponse.data))
-            .catch(err => { console.error("Stats update failed:", err); setError("Stats update failed."); });
-
-        // Update Balance (if changed)
-        if (balanceChange !== 0) {
-            updatePlayerBalance(userId, balanceChange, token)
-                .then(balanceResponse => setPlayerBalance(Number(balanceResponse.data.balance)))
-                .catch(err => { console.error("Balance update failed:", err); setError("Balance update failed."); });
-        } else {
-             console.log("Balance unchanged.");
-        }
-    } else { console.error("Cannot update balance/stats: Auth missing."); setError("Auth error."); }
-  };
-
-  // --- Betting Actions ---
-  const changeBet = (amount: number): void => {
+  // --- Betting Actions (Use onPlayerAction prop) ---
+  const changeBetInput = (amount: number): void => {
     playSound('button-click.mp3');
-    if (lockedBet !== null || playerBalance === null) return;
-    setCurrentBet((prev: number) => Math.max(MIN_BET, Math.min(playerBalance, prev + amount)));
+    const myBalance = myPlayerId ? gameState.players[myPlayerId]?.balance : null;
+    setBetAmountInput((prev) => {
+        const currentVal = parseInt(prev, 10) || 0;
+        const newVal = currentVal + amount;
+        const validatedVal = Math.max(gameState.minBet, Math.min(newVal, myBalance ?? Infinity, gameState.maxBet));
+        return String(validatedVal);
+    });
   };
 
-  const handleSetBet = (): void => {
-    if (playerBalance === null || currentBet > playerBalance) { setGameMessage("Insufficient balance!"); return; }
-    if (currentBet >= MIN_BET) {
-      playSound('button-click.mp3'); setLockedBet(currentBet);
-      setGameMessage(`Bet of ${currentBet}$ placed. Click Ready.`);
-      console.log(`Bet set to: ${currentBet}`);
+  const handlePlaceBetAction = (): void => {
+    const amount = parseInt(betAmountInput, 10);
+    const myBalance = myPlayerId ? gameState.players[myPlayerId]?.balance : null;
+
+    if (isNaN(amount) || amount < gameState.minBet || amount > gameState.maxBet) {
+        setError(`Invalid bet amount. Must be between ${gameState.minBet} and ${gameState.maxBet}.`);
+        return;
     }
+    if (myBalance !== undefined && myBalance !== null && amount > myBalance) {
+         setError("Insufficient balance.");
+         return;
+    }
+
+    playSound('button-click.mp3');
+    onPlayerAction({ actionType: 'PLACE_BET', payload: { amount } });
+    setError(null);
   };
 
-  const handleReadyClick = (): void => {
-    if (lockedBet === null) { setGameMessage("Please set bet first!"); return; }
-    playSound('button-click.mp3'); setIsReady(true);
-    console.log("Player ready status set to: true");
-  };
-
-  const handleAutoReadyChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    setIsAutoReady(e.target.checked); console.log("Auto Ready:", e.target.checked);
-  };
-
-  // --- Render Logic ---
+  // --- Render Logic (Adapted for gameState prop) ---
   const renderPlayerSpots = () => {
-    const otherPlayerSpots = [
-      { id: 'p1', name: 'No Player', style: styles.playerOtherSpot1 }, { id: 'p2', name: 'No Player', style: styles.playerOtherSpot2 },
-      { id: 'p3', name: 'No Player', style: styles.playerOtherSpot3 }, { id: 'p4', name: 'No Player', style: styles.playerOtherSpot4 },
-      { id: 'p5', name: 'No Player', style: styles.playerOtherSpot5 }, { id: 'p6', name: 'No Player', style: styles.playerOtherSpot6 },
+    const players = gameState.players;
+    const dealer = gameState.dealer;
+    const allPlayerIds = Object.keys(players);
+    const otherPlayerIds = allPlayerIds.filter(id => id !== myPlayerId);
+
+    const playerSpotStyles = [
+      styles.playerSelfSpot, styles.playerOtherSpot1, styles.playerOtherSpot2,
+      styles.playerOtherSpot3, styles.playerOtherSpot4, styles.playerOtherSpot5,
+      styles.playerOtherSpot6,
     ];
+
+    const playerElements: React.ReactNode[] = [];
+    let assignedSpots = 0;
+
+    // Render self
+    if (myPlayerId && players[myPlayerId]) {
+      const player = players[myPlayerId];
+      const isActive = gameState.currentPlayerTurn === player.id;
+      playerElements.push(
+        <div key={player.id} className={`${styles.playerSpot} ${playerSpotStyles[0]} ${isActive ? styles.activeTurn : ''}`}>
+          {/* Hand Container now inside player spot */}
+          <div className={`${styles.handContainer}`}> 
+            {player.hand.map((card, index) => (
+              <CardComponent key={`player-${player.id}-${index}`} card={card} />
+            ))}
+          </div>
+          {/* Player Info Below Cards */}
+          <div className={styles.playerInfo}>
+            {player.name} (You)
+            {player.balance !== undefined && <div className={styles.balance}>{player.balance}$</div>}
+            {player.bet !== null && <div className={styles.betIndicator}>Bet: {player.bet}$</div>}
+            {player.hand.length > 0 && (
+              <span className={styles.handValue}>Total: {player.score} ({player.status})</span>
+            )}
+          </div>
+        </div>
+      );
+      assignedSpots++;
+    }
+
+    // Render others
+    otherPlayerIds.forEach(playerId => {
+      if (assignedSpots >= playerSpotStyles.length) return;
+      const player = players[playerId];
+      const isActive = gameState.currentPlayerTurn === player.id;
+      playerElements.push(
+         <div key={player.id} className={`${styles.playerSpot} ${playerSpotStyles[assignedSpots]} ${isActive ? styles.activeTurn : ''}`}>
+           {/* Hand Container now inside player spot */}
+           <div className={`${styles.handContainer}`}>
+            {player.hand.map((card, index) => (
+              <CardComponent key={`player-${player.id}-${index}`} card={card} />
+            ))}
+          </div>
+           {/* Player Info Below Cards */}
+           <div className={styles.playerInfo}>
+            {player.name}
+            {player.balance !== undefined && <div className={styles.balance}>{player.balance}$</div>}
+            {player.bet !== null && <div className={styles.betIndicator}>Bet: {player.bet}$</div>}
+            {player.hand.length > 0 && (
+              <span className={styles.handValue}>Total: {player.score} ({player.status})</span>
+            )}
+          </div>
+        </div>
+      );
+      assignedSpots++;
+    });
+
+     // Fill remaining spots with placeholders
+     while (assignedSpots < playerSpotStyles.length) {
+        playerElements.push(
+            <div key={`empty-${assignedSpots}`} className={`${styles.playerSpot} ${playerSpotStyles[assignedSpots]}`}>
+                No Player
+            </div>
+        );
+        assignedSpots++;
+     }
+
     return (
       <>
-        <div className={`${styles.playerSpot} ${styles.dealerSpot}`}>Dealer
-          <div className={`${styles.handContainer} ${styles.dealerHand}`}>
-            {dealerHand.map((card, index) => ((index === 0 && !gameOver && playerHand.length > 0 && dealerHand.length > 1) ? <CardComponent key={`dealer-back-${index}`} card='back' /> : <CardComponent key={`dealer-${index}`} card={card} />))}
+        {/* Dealer - Also move hand inside */}
+        <div className={`${styles.playerSpot} ${styles.dealerSpot}`}>
+           {/* Hand Container now inside dealer spot */}
+           <div className={`${styles.handContainer}`}>
+            {dealer.hand.map((card, index) => (
+              <CardComponent key={`dealer-${index}`} card={card} />
+            ))}
           </div>
-          {!gameOver && playerHand.length > 0 && dealerHand.length > 1 && (<span className={styles.handValue}>Shows: {calculateHandValue([dealerHand[1]])}</span>)}
-          {gameOver && dealerHand.length > 0 && (<span className={styles.handValue}>Total: {calculateHandValue(dealerHand)}</span>)}
-        </div>
-        <div className={`${styles.playerSpot} ${styles.playerSelfSpot}`}>{playerName || "Player"}
-          <div className={styles.balance}>{playerBalance !== null ? `${playerBalance}$` : "Loading..."}</div>
-          <div className={`${styles.handContainer} ${styles.playerSelfHand}`}>
-            {playerHand.map((card, index) => (<CardComponent key={`player-${index}`} card={card} />))}
+           {/* Dealer Info Below Cards */}
+           <div className={styles.playerInfo}>
+            Dealer
+            {(gameState.gamePhase !== 'player_turns' || dealer.status === 'blackjack') && dealer.hand.length > 0 && (
+              <span className={styles.handValue}>Total: {dealer.score} ({dealer.status})</span>
+            )}
+            {gameState.gamePhase === 'player_turns' && dealer.hand.length > 0 && !dealer.hand[0]?.isFaceDown && (
+               <span className={styles.handValue}>Shows: {dealer.hand[0]?.value === 11 ? 'A' : dealer.hand[0]?.value}</span>
+            )}
           </div>
-          {playerHand.length > 0 && (<span className={styles.handValue}>Total: {calculateHandValue(playerHand)}</span>)}
         </div>
-        {otherPlayerSpots.map(spot => (<div key={spot.id} className={`${styles.playerSpot} ${spot.style}`}>{spot.name}</div>))}
+        {/* Render player elements */}
+        {playerElements}
       </>
     );
   };
 
   // --- Effects ---
-  useEffect(() => { // Fetch initial player details
-    if (userId && token && playerBalance === null && !isAuthLoading) {
-      setIsLoadingData(true); setError(null);
-      getPlayerDetails(userId, token)
-        .then(data => {
-            const fetchedBalance = Number(data.balance);
-            setPlayerBalance(fetchedBalance);
-            setPlayerName(data.username || "Player");
-            const initialBet = Math.max(MIN_BET, Math.min(DEFAULT_BET, fetchedBalance));
-            console.log(`DEBUG: useEffect - Fetched Balance: ${fetchedBalance}, Setting initial currentBet to: ${initialBet}`);
-            setCurrentBet(initialBet);
-            setIsLoadingData(false);
-        })
-        .catch(err => { console.error("Fetch details failed:", err); setError("Failed to load player data."); setIsLoadingData(false); });
-    } else if (!isAuthLoading && !userId) { setError("User not authenticated."); setIsLoadingData(false); }
-    else if (playerBalance !== null) { setIsLoadingData(false); }
-  }, [userId, token, playerBalance, isAuthLoading]);
-
-  useEffect(() => { // Deal cards when ready
-    if (isReady && !gameOver && lockedBet !== null && playerHand.length === 0) {
-      console.log("Ready state triggered dealing.");
-      dealInitialCards();
-    }
-  }, [isReady, gameOver, lockedBet, playerHand.length]);
+  // Removed useEffect for fetching player details - rely on gameState
 
   // --- Loading & Error States ---
-  if (isAuthLoading || isLoadingData) return <div className={styles.gameScreen}>Loading...</div>;
-  if (error && !userId) return <div className={styles.gameScreen}>Error: {error} Please log in.</div>;
-  if (playerBalance === null) return <div className={styles.gameScreen}>Error: Could not load player balance. {error}</div>;
+  // Removed loading/error checks related to local data fetching
 
   // --- Render Controls Logic ---
   const renderControls = () => {
-    // Betting Phase
-    if (!gameOver && lockedBet === null && playerHand.length === 0) {
-      console.log("DEBUG: RenderControls - Betting Phase Active", { currentBet, playerBalance });
+    const myPlayerState = myPlayerId ? gameState.players[myPlayerId] : null;
+    // If myPlayerState is null (maybe briefly during join/leave), don't render controls
+    if (!myPlayerState) return null; 
+
+    const isMyTurn = gameState.currentPlayerTurn === myPlayerId;
+
+    // Betting Phase Controls
+    if (gameState.gamePhase === 'betting' && myPlayerState.status === 'betting') {
       return (
         <>
           <div className={styles.bettingControls}>
-            <div className={styles.betSection}>Current Bet: <span className={styles.betAmountDisplay}>{currentBet}$</span></div>
-            <div className={styles.betSection}>Change Bet:</div>
-            {/* Simplified disabled logic */}
-            <div className={styles.betSection}><button className={styles.betChangeButton} onClick={() => changeBet(-50)} disabled={currentBet <= 50}>- 50</button></div>
-            <div className={styles.betSection}><button className={styles.betChangeButton} onClick={() => changeBet(-10)} disabled={currentBet <= MIN_BET}>- 10</button></div>
-            <div className={styles.betSection}><button className={styles.betChangeButton} onClick={() => changeBet(10)} disabled={playerBalance === null || currentBet + 10 > playerBalance}>+ 10</button></div>
-            <div className={styles.betSection}><button className={styles.betChangeButton} onClick={() => changeBet(50)} disabled={playerBalance === null || currentBet + 50 > playerBalance}>+ 50</button></div>
-            <div className={styles.betSection}><button className={styles.betChangeButton} onClick={handleSetBet} disabled={playerBalance === null || currentBet < MIN_BET || currentBet > playerBalance}>Set Bet: {currentBet}$</button></div>
+            <div className={styles.betSection}>Adjust Bet:</div>
+            <div className={styles.betSection}><button className={styles.betChangeButton} onClick={() => changeBetInput(-50)}>- 50</button></div>
+            <div className={styles.betSection}><button className={styles.betChangeButton} onClick={() => changeBetInput(-10)}>- 10</button></div>
+            <div className={styles.betSection}><button className={styles.betChangeButton} onClick={() => changeBetInput(10)}>+ 10</button></div>
+            <div className={styles.betSection}><button className={styles.betChangeButton} onClick={() => changeBetInput(50)}>+ 50</button></div>
+            <div className={styles.betSection}><button className={styles.betChangeButton} onClick={handlePlaceBetAction}>Set Bet: {betAmountInput}$</button></div>
           </div>
-          <div className={styles.readyControls}><span style={{ color: '#aaa' }}>Set your bet.</span></div>
         </>
       );
     }
-    // Waiting Phase (Bet Locked, No Cards)
-    if (!gameOver && lockedBet !== null && playerHand.length === 0) {
+
+    // Player's Turn Controls
+    if (gameState.gamePhase === 'player_turns' && isMyTurn && myPlayerState.status === 'playing') {
+       const canHit = myPlayerState.canHit ?? false;
+       const canStand = myPlayerState.canStand ?? false;
+       const canDouble = myPlayerState.canDouble ?? false; // Get canDouble flag
+
       return (
         <>
-          <div className={styles.bettingControls}><div className={styles.betSection}>Bet Placed: <span className={styles.betAmountDisplay}>{lockedBet}$</span></div></div>
+          {myPlayerState.bet !== null && <div className={styles.bettingControls}><div className={styles.betSection}>Bet Placed: <span className={styles.betAmountDisplay}>{myPlayerState.bet}$</span></div></div>}
           <div className={styles.readyControls}>
-            <button className={styles.readyButton} onClick={handleReadyClick} disabled={isReady}>{isReady ? "Waiting..." : `Ready (${lockedBet}$)`}</button>
-            <label><input type="checkbox" checked={isAutoReady} onChange={handleAutoReadyChange} /> Auto Ready</label>
+            <button className={styles.betButton} onClick={hit} disabled={!canHit}>Hit</button>
+            <button className={styles.betButton} onClick={stand} disabled={!canStand}>Stand</button>
+            {/* Add Double Down Button */}
+            <button className={styles.betButton} onClick={doubleDown} disabled={!canDouble}>Double</button> 
           </div>
         </>
       );
     }
-    // Player's Turn (Bet Locked, Cards Dealt)
-    if (!gameOver && lockedBet !== null && playerHand.length > 0) {
+
+    // Round Over / Waiting for Next Round Controls
+    if (gameState.gamePhase === 'round_over') {
       return (
-        <>
-          <div className={styles.bettingControls}><div className={styles.betSection}>Bet Placed: <span className={styles.betAmountDisplay}>{lockedBet}$</span></div></div>
           <div className={styles.readyControls}>
-            <button className={styles.betButton} onClick={hit}>Hit</button>
-            <button className={styles.betButton} onClick={stand}>Stand</button>
+              Waiting for next round...
           </div>
-        </>
       );
     }
-    // Game Over
-    if (gameOver) {
-      return (
-        <div className={styles.readyControls}>
-          <button className={styles.readyButton} onClick={startNewRound}>Start New Game</button>
-        </div>
-      );
+
+    // Default: Show bet if placed, otherwise status
+    if (myPlayerState.bet !== null) {
+         return <div className={styles.bettingControls}><div className={styles.betSection}>Bet Placed: <span className={styles.betAmountDisplay}>{myPlayerState.bet}$</span></div></div>;
     }
-    return null; // Fallback
+    // Check if myPlayerState exists before accessing status (already checked above)
+    return <div className={styles.readyControls}><span style={{ color: '#aaa' }}>{myPlayerState.status}...</span></div>;
+
   };
 
   // --- Main Component Return ---
@@ -330,11 +292,23 @@ const BlackjackGame: React.FC = () => {
       <div className={styles.gameTable}>
         <div className={styles.tableCenterText}><h2>Blackjack pays 3 to 2</h2><p>Dealer must stand on 17</p></div>
         {renderPlayerSpots()}
-        {gameMessage && <div className={styles.resultText}>{gameMessage}</div>}
+        {/* Message log is now moved below controlsArea */}
       </div>
       <div className={styles.controlsArea}>
+        {error && <div style={{ color: 'red', marginBottom: '10px' }}>Error: {error}</div>}
         {renderControls()}
-        <div className={styles.roomIdDisplay}>Room ID: {MOCK_ROOM_ID}</div>
+        <div className={styles.roomIdDisplay}>Room ID: {roomId || 'N/A'}</div>
+      </div>
+      {/* New Message Log Area */}
+      <div className={styles.messageLogArea}>
+        <h3>Game Log</h3>
+        <div className={styles.messageLogContent}>
+          {gameState.messageLog && gameState.messageLog.slice(-4).map((msg, index) => ( // Display last 4 messages
+            <p key={`log-${gameState.roundId}-${gameState.messageLog.length - 4 + index}`} className={styles.messageLogEntry}>
+              {msg}
+            </p>
+          ))}
+        </div>
       </div>
     </div>
   );

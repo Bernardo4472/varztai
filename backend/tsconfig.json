@@ -8,7 +8,7 @@
     "esModuleInterop": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "types": ["node"],
+    // "types": ["node", "express", "cors", "jsonwebtoken", "pg", "socket.io", "uuid", "bcrypt", "dotenv"], // Let TypeScript auto-detect types
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
