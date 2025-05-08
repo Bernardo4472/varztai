@@ -31,7 +31,39 @@ export async function getPlayerDetails(userId: number | string, token: string): 
     throw new Error(errorResult.message || "Failed to fetch player details");
   }
   // Backend now returns data directly
+  // Backend now returns data directly
   return result; 
+}
+
+// 🔹 Interface for the stats update response
+export interface UpdateStatsResponse {
+    message: string;
+    data: { // Assuming backend returns the updated stats
+        id: number;
+        username: string;
+        wins: number;
+        losses: number;
+        games_played: number;
+    };
+}
+
+// 🔸 Function to update player stats
+export async function updatePlayerStats(userId: number | string, gameResult: 'win' | 'loss' | 'push' | 'tie', token: string): Promise<UpdateStatsResponse> {
+    const response = await fetch(`${API_URL}/players/${userId}/stats`, {
+        method: "PATCH",
+        headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ result: gameResult }) // Send the game result
+    });
+
+    const result = await response.json();
+    if (!response.ok) {
+        const errorResult = await response.json().catch(() => ({ message: "Failed to update stats" }));
+        throw new Error(errorResult.message || "Failed to update stats");
+    }
+    return result;
 }
 
 // 🔸 Function to update user balance

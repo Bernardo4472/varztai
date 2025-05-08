@@ -68,6 +68,19 @@
     min-width: 100px;
     z-index: 2; /* Above table, below cards */
     box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease; /* Add transition for smooth highlight */
+    border: 2px solid transparent; /* Add transparent border for layout stability */
+    display: flex; /* Use flexbox to arrange hand and info */
+    flex-direction: column; /* Stack hand above info */
+    align-items: center; /* Center items horizontally */
+    min-height: 180px; /* Increased height to better fit cards + info */
+    justify-content: flex-start; /* Align items to the top */
+}
+
+/* Style for the active player's turn */
+.activeTurn {
+    border-color: #ffeb3b; /* Bright yellow border */
+    box-shadow: 0 0 15px rgba(255, 235, 59, 0.6); /* Optional glow effect */
 }
 
 .dealerSpot {
@@ -91,33 +104,43 @@
     margin-top: 3px;
 }
 
-/* Positioning for other player spots (adjust percentages as needed) */
-.playerOtherSpot1 { top: 20%; left: 15%; transform: translateX(-50%); }
-.playerOtherSpot2 { top: 20%; right: 15%; transform: translateX(50%); }
-.playerOtherSpot3 { top: 50%; left: 5%; transform: translate(-50%, -50%); }
-.playerOtherSpot4 { top: 50%; right: 5%; transform: translate(50%, -50%); }
-.playerOtherSpot5 { bottom: 20%; left: 15%; transform: translateX(-50%); }
-.playerOtherSpot6 { bottom: 20%; right: 15%; transform: translateX(50%); }
+/* Positioning for other player spots - Adjusted for more distance */
+/* Dealer is top: 5%, Self is bottom: 5% */
+
+/* Spot 1: Further Top-Left */
+.playerOtherSpot1 { top: 25%; left: 10%; transform: translate(-50%, -50%); } 
+/* Spot 2: Further Top-Right */
+.playerOtherSpot2 { top: 25%; right: 10%; transform: translate(50%, -50%); }
+/* Spot 3: Further Mid-Left */
+.playerOtherSpot3 { top: 60%; left: 3%; transform: translate(-50%, -50%); } 
+/* Spot 4: Further Mid-Right */
+.playerOtherSpot4 { top: 60%; right: 3%; transform: translate(50%, -50%); }
+/* Spot 5: Further Bottom-Left (higher than self) */
+.playerOtherSpot5 { bottom: 15%; left: 25%; transform: translateX(-50%); }
+/* Spot 6: Further Bottom-Right (higher than self) */
+.playerOtherSpot6 { bottom: 15%; right: 25%; transform: translateX(50%); }
 
 
-/* Hand container (for cards) - positioned relative to player spots */
+/* Hand container (for cards) - Now part of the flex flow */
 .handContainer {
-    position: absolute;
+    /* position: absolute; REMOVED */
     display: flex;
-    min-height: 80px; /* Ensure space for cards */
-    z-index: 3; /* Above player spots */
+    justify-content: center; /* Center cards horizontally */
+    min-height: 95px; /* Ensure space for cards (height ~90px) */
+    width: 100%; /* Take full width of spot */
+    margin-bottom: 8px; /* Increased space between cards and player info */
+    flex-shrink: 0; /* Prevent hand container from shrinking */
 }
 
-.dealerHand {
-    top: 15%; /* Below dealer spot */
-    left: 50%;
-    transform: translateX(-50%);
-}
+/* Remove specific absolute positioning for hands */
+/* .dealerHand { ... } REMOVED */
+/* .playerSelfHand { ... } REMOVED */
 
-.playerSelfHand {
-    bottom: 15%; /* Above player spot */
-    left: 50%;
-    transform: translateX(-50%);
+/* Style for the player info block below the cards */
+.playerInfo {
+    /* margin-top: 5px; REMOVED - using margin-bottom on handContainer */
+    text-align: center; /* Ensure text info is centered */
+    width: 100%; /* Ensure it takes width for centering */
 }
 
 /* Card Styling */
@@ -292,4 +315,44 @@
 /* Hide default actions if using new controls */
 .actions {
     display: none; /* Hide the old Hit/Stand buttons if replacing */
+}
+
+/* Message Log Area Styling */
+.messageLogArea {
+    margin-top: 20px; /* Space above the log */
+    width: 80%; /* Take up decent width */
+    max-width: 600px; /* Max width */
+    background-color: rgba(30, 30, 46, 0.6); /* Dark violet transparent */
+    border-radius: 8px;
+    padding: 10px 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    max-height: 150px; /* Limit height */
+    display: flex;
+    flex-direction: column;
+}
+
+.messageLogArea h3 {
+    margin: 0 0 10px 0;
+    padding-bottom: 5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    color: #eee;
+    font-size: 1rem;
+    text-align: center;
+}
+
+.messageLogContent {
+    overflow-y: auto; /* Add scrollbar if content exceeds max-height */
+    flex-grow: 1; /* Allow content to take available space */
+}
+
+.messageLogEntry {
+    margin: 2px 0;
+    padding: 3px 5px;
+    font-size: 0.85rem;
+    color: #ccc;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.1); /* Separator */
+}
+
+.messageLogEntry:last-child {
+    border-bottom: none; /* No border on the last message */
 }

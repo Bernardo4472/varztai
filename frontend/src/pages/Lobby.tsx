@@ -14,6 +14,9 @@ const Main: React.FC = () => {
   const handleDirectoryRules = () => {
     navigate("/Rules");
   };
+  const handleDirectoryPlayChoose = () => {
+    navigate("/PlayChoose");
+  };
 
   //const [players, setPlayers] = useState<any[]>([]); // jei žaisi su tipais vėliau, galima aprašyti
   const closeTab = () => {
@@ -31,6 +34,7 @@ const Main: React.FC = () => {
             <h2 className="form-title">Pasirinkite</h2>
 
             <button onClick={handleDirectoryPlay}>Žaisti</button>
+            <button onClick={handleDirectoryPlayChoose}>Prisijungti</button>
             <button onClick={handleDirectorySettings}>Nustatymai</button>
             <button onClick={closeTab}>Išjungti</button>
             <button onClick={handleDirectoryRules}>Taisyklės</button>

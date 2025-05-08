@@ -11,7 +11,10 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./database:/docker-entrypoint-initdb.d
+      # Changed from host-bound to named volume:
+      - pgdata:/var/lib/postgresql/data
+      # This line for init scripts remains:
+      - ./database:/docker-entrypoint-initdb.d # Consistent with original setup
 
   backend:
     build: ./backend
@@ -31,3 +34,7 @@ services:
     environment:
       VITE_API_URL: http://localhost:5000
     command: npm run dev -- --host
+
+# Declare the named volume
+volumes:
+  pgdata:

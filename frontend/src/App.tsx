@@ -7,6 +7,7 @@ import Profile from './pages/Profile';
 import PlayChoose from './pages/PlayChoose';
 import Lobby from './pages/Lobby';
 import Rules from './pages/Rules';
+import Room from './pages/Room'; // Import the Room component
 
 const App = () => {
   return (
@@ -17,8 +18,9 @@ const App = () => {
       <Route path="/settings" element={<Settings />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/playChoose" element={<PlayChoose />} />
-      <Route path="/lobby" element={<Lobby />} /> 
-      <Route path="/rules" element={<Rules />} />     
+      <Route path="/lobby" element={<Lobby />} />
+      <Route path="/rules" element={<Rules />} />
+      <Route path="/room/:roomId" element={<Room />} /> {/* Add route for Room */}
     </Routes>
   );
 };
