@@ -1,0 +1,101 @@
+/* Bendri nustatymai */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #1e1e2e;
+    margin: 0;
+    padding: 0;
+    height: 200vh;
+  }
+  
+  /* Puslapio konteineris */
+  .page_Container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #1e1e2e;
+    height: 100vh;
+  }
+  
+  /* Vidinis konteineris */
+  .container {
+    background: #2c2c3e;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    width: 90%;
+    max-width: 600px;
+    position: relative;
+  }
+  
+  /* Puslapio antraštė */
+  .title {
+    color: white;
+    font-size: 3rem;
+    font-weight: bold;
+    text-shadow: 5px 5px 5px black;
+    margin-bottom: 30px;
+  }
+  
+  /* Taisyklių tekstas */
+  .rules-text {
+    color: black;
+    text-align: left;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Skyriai */
+  .rules-text section {
+    margin-bottom: 20px;
+  }
+  
+  /* Kiekvienos taisyklės antraštės */
+  .rules-text h2 {
+    color: #4caf50;
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+  }
+  
+  /* Tekstas ir sąrašai */
+  .rules-text p,
+  .rules-text ul {
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+  
+  /* Sąrašai */
+  .rules-text ul {
+    padding-left: 20px;
+  }
+  
+  /* Vidiniai sąrašai */
+  .rules-text ul ul {
+    padding-left: 20px;
+    list-style-type: circle;
+  }
+  
+  /* Mygtukas */
+  .menu-btn {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    margin-top: 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s, transform 0.2s;
+  }
+  
+  /* Mygtuko hover efektas */
+  .menu-btn:hover {
+    background-color: #45a049;
+    transform: scale(1.05);
+  }
+  p {
+    color: rgb(0, 0, 0);
+}

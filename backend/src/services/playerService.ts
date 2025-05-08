@@ -106,6 +106,89 @@ export const updatePlayerBalanceInDb = async (userId: string, balanceChange: num
   }
 };
 
+/**
+ * Updates a player's game statistics in the database.
+ * @param userId - The ID of the user whose stats are to be updated.
+ * @param gameResult - The final status of the player for the round.
+ * @returns True if successful, false otherwise.
+ */
+import { PlayerStatus } from '../types/gameTypes'; // Import the PlayerStatus type
+
+export const updatePlayerStatsInDb = async (userId: string, gameResult: PlayerStatus): Promise<boolean> => {
+    console.log(`[PlayerService] Attempting to update stats for userId: ${userId} with result: ${gameResult}`);
+
+    const numericUserId = parseInt(userId, 10);
+    if (isNaN(numericUserId)) {
+        console.error(`[PlayerService] Invalid userId format for stats update: ${userId}. Must be a number.`);
+        return false;
+    }
+
+    let winIncrement = 0;
+    let lossIncrement = 0;
+    let gamePlayedIncrement = 0;
+    const gameResultStr = gameResult as string; // Cast to string to bypass faulty TS check
+
+    // Detailed log for debugging string comparison
+    console.log(`[PlayerService] DEBUG: Comparing gameResultStr: '${gameResultStr}' (length: ${gameResultStr.length}, type: ${typeof gameResultStr}) with known statuses.`);
+    console.log(`[PlayerService] DEBUG: Is gameResultStr === 'won'? ${gameResultStr === 'won'}`);
+    console.log(`[PlayerService] DEBUG: Is gameResultStr === 'blackjack'? ${gameResultStr === 'blackjack'}`);
+    console.log(`[PlayerService] DEBUG: Is gameResultStr === 'lost'? ${gameResultStr === 'lost'}`);
+    console.log(`[PlayerService] DEBUG: Is gameResultStr === 'busted'? ${gameResultStr === 'busted'}`);
+    console.log(`[PlayerService] DEBUG: Is gameResultStr === 'push'? ${gameResultStr === 'push'}`);
+
+
+    // Using if/else if to avoid potential TypeScript issues with switch/map on union types in this environment
+    if (gameResultStr === 'won' || gameResultStr === 'blackjack') { // Corrected to 'won'
+        winIncrement = 1;
+        gamePlayedIncrement = 1;
+    } else if (gameResultStr === 'lost' || gameResultStr === 'busted') { // Corrected to 'lost'
+        lossIncrement = 1;
+        gamePlayedIncrement = 1;
+    } else if (gameResultStr === 'push') {
+        gamePlayedIncrement = 1;
+    } else if (gameResultStr === 'stood' || gameResultStr === 'waiting' || gameResultStr === 'betting' || gameResultStr === 'playing') {
+        // No stat changes for these statuses
+        console.log(`[PlayerService] No database update for stats needed for status (e.g. stood, waiting): '${gameResultStr}'`);
+        return true;
+    } else {
+        // Handle any unexpected PlayerStatus values not explicitly covered
+        console.warn(`[PlayerService] Unhandled game result (fell to final else): '${gameResultStr}' for stats update. No stats will be changed.`);
+        return true; // Return true as it's not a DB error, just no action.
+    }
+
+    // If, after the conditions, no increments are set (e.g., for 'push' if gamePlayedIncrement was not set, though it is now)
+    // This check is a safeguard.
+    if (winIncrement === 0 && lossIncrement === 0 && gamePlayedIncrement === 0) {
+         console.log(`[PlayerService] All increments determined to be zero for status: ${gameResult}. No DB update.`);
+         return true;
+    }
+
+    try {
+        const result = await pool.query(
+            `UPDATE users 
+             SET 
+               wins = wins + $1, 
+               losses = losses + $2, 
+               games_played = games_played + $3
+             WHERE id = $4`,
+            [winIncrement, lossIncrement, gamePlayedIncrement, numericUserId]
+        );
+
+        if (result.rowCount && result.rowCount > 0) {
+            // This log is crucial to confirm the DB operation reported success and what it *thought* it did.
+            console.log(`[PlayerService] DB STATS UPDATE SUCCEEDED for userId ${numericUserId}. Applied Increments: Wins+${winIncrement}, Losses+${lossIncrement}, Games+${gamePlayedIncrement}. Rows affected: ${result.rowCount}`);
+            return true;
+        }
+        // This means the UPDATE query ran but didn't find/affect any rows.
+        console.warn(`[PlayerService] User ${numericUserId} not found for stats update, or no rows affected by query.`);
+        return false;
+    } catch (error) {
+        console.error(`[PlayerService] Error updating stats for userId ${numericUserId}:`, error);
+        return false;
+    }
+};
+
+
 // Potentially, a function to map socket.id to userId if not handled elsewhere
 // This is a critical piece. For now, we'll assume this mapping is provided
 // to the service calls or handled at a higher level (e.g., in server.ts upon connection).

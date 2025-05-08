@@ -99,7 +99,7 @@ const PlayChoose: React.FC = () => {
           </div>
         )}
 
-        <button className="menu-btn" onClick={() => navigate("/")}>
+        <button className="menu-btn" onClick={() => navigate("/lobby")}>
           Grįžti į Pagrindinį Meniu
         </button>
       </div>

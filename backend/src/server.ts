@@ -21,8 +21,8 @@ import {
   // resolveRound is called internally by playDealerTurn now
   // transitionToBetting is already imported above
 } from "./gameLogic/gameManager";
-import { BlackjackGameState, PlayerGameState } from "./types/gameTypes";
-import { getPlayerDetailsById, updatePlayerBalanceInDb } from "./services/playerService"; // Added playerService imports
+import { BlackjackGameState, PlayerGameState, PlayerStatus } from "./types/gameTypes"; // Added PlayerStatus type
+import { getPlayerDetailsById, updatePlayerBalanceInDb, updatePlayerStatsInDb } from "./services/playerService"; // Added playerService imports including stats update
 import jwt from 'jsonwebtoken'; // Added for JWT verification
 
 dotenv.config();
@@ -35,9 +35,19 @@ interface JwtPayload {
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } });
+// Explicit CORS options for HTTP routes
+const corsOptions = {
+  origin: 'http://localhost:5173', // Allow frontend origin
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true, // Allow cookies if needed later (good practice)
+  optionsSuccessStatus: 204 
+};
 
-app.use(cors());
+const io = new Server(server, { 
+  cors: corsOptions // Use same options for Socket.IO for consistency
+});
+
+app.use(cors(corsOptions)); // Use explicit options for Express
 app.use(express.json());
 
 app.use("/api", authRoutes);
@@ -350,17 +360,41 @@ io.on("connection", (socket: Socket) => { // Added type for socket
                                 if (dbUserId) {
                                     console.log(`[Server] Persisting balance change for authenticated socket ${player.id} (DB User ${dbUserId}). Change: ${balanceChange}`);
                                     try {
-                                        const success = await updatePlayerBalanceInDb(dbUserId, balanceChange);
-                                        if (success) {
+                                        // Update Balance
+                                        const balanceSuccess = await updatePlayerBalanceInDb(dbUserId, balanceChange);
+                                        if (balanceSuccess) {
                                             console.log(`[Server] DB Balance updated successfully for DB User ${dbUserId}.`);
                                         } else {
                                             console.warn(`[Server] DB Balance update FAILED for DB User ${dbUserId} (service returned false).`);
                                         }
+                                        // Update Stats (pass the final player status)
+                                        const statsSuccess = await updatePlayerStatsInDb(dbUserId, player.status as PlayerStatus);
+                                        if (statsSuccess) {
+                                            console.log(`[Server] DB Stats updated successfully for DB User ${dbUserId} based on result: ${player.status}`);
+                                        } else {
+                                             console.warn(`[Server] DB Stats update FAILED for DB User ${dbUserId} (service returned false).`);
+                                        }
+
                                     } catch (error) {
-                                        console.error(`[Server] DB Balance update FAILED for DB User ${dbUserId}:`, error);
+                                        console.error(`[Server] DB Balance/Stats update FAILED for DB User ${dbUserId}:`, error);
                                     }
                                 } else {
-                                  console.warn(`[Server] Cannot update DB balance for socket ${player.id}: Missing DB userId mapping.`);
+                                  console.warn(`[Server] Cannot update DB balance/stats for socket ${player.id}: Missing DB userId mapping.`);
+                                }
+                            } else {
+                                // Even if balanceChange is 0 (e.g., push), update stats if it was a played round
+                                const dbUserId = socketIdToDbUserId[player.id];
+                                if (dbUserId && (player.status === 'push' || player.status === 'blackjack' || player.status === 'busted')) {
+                                     try {
+                                        const statsSuccess = await updatePlayerStatsInDb(dbUserId, player.status as PlayerStatus);
+                                        if (statsSuccess) {
+                                            console.log(`[Server] DB Stats updated successfully for DB User ${dbUserId} based on result: ${player.status}`);
+                                        } else {
+                                             console.warn(`[Server] DB Stats update FAILED for DB User ${dbUserId} (service returned false).`);
+                                        }
+                                     } catch (error) {
+                                         console.error(`[Server] DB Stats update FAILED for DB User ${dbUserId}:`, error);
+                                     }
                                 }
                             }
                          });

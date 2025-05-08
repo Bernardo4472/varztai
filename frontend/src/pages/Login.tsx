@@ -16,12 +16,13 @@ const Login: React.FC = () => {
     try {
       const res: LoginResponse = await loginUser(loginData);
 
-      // Galima čia išsaugoti tokeną ar naudotoją global state ar localStorage
+      // Store token, userId, username, and balance in localStorage
       localStorage.setItem("token", res.token);
+      localStorage.setItem("userId", String(res.userId)); // Store userId (convert to string if number)
       localStorage.setItem("username", res.username);
       localStorage.setItem("balance", res.balance.toString());
 
-      console.log("✅ Prisijungta:", res);
+      console.log("✅ Prisijungta:", res); // Log the full response including userId
       navigate("/Lobby"); // Perkeliame į pagrindinį puslapį
     } catch (err: any) {
       setError(err.message || "Nepavyko prisijungti");

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./Styles.css";
+import "./StylesSettings.css";
 
 const Settings: React.FC = () => {
   const [username, setUsername] = useState<string>("User123");
