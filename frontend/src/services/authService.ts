@@ -11,6 +11,7 @@ export interface AuthData {
 export interface LoginResponse {
   message: string;
   token: string;
+  userId: number | string; // Add userId (can be number or string depending on DB/backend)
   username: string;
   balance: number;
 }

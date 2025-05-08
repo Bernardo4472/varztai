@@ -1,0 +1,133 @@
+/* Bendri nustatymai */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #1e1e2e;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+  }
+  
+  /* Puslapio konteineris */
+  .page_Container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #1e1e2e;
+    min-height: 100vh;
+    padding: 40px 20px;
+  }
+  
+  /* Puslapio antraštė */
+  .title {
+    color: white;
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 30px;
+    text-shadow: 5px 5px 5px black;
+  }
+  
+  /* Grid'as nustatymams */
+  .settings-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    background: #2c2c3e;
+    padding: 30px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 800px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  }
+  
+  /* Kolonos (kairė ir dešinė) */
+  .settings-column {
+    flex: 1;
+    min-width: 300px;
+    margin: 10px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Forma */
+  .form-title {
+    color: #4caf50;
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  /* Etiketės prie input'ų */
+  .input-label {
+    color: white;
+    margin-bottom: 5px;
+    font-size: 1rem;
+    text-align: left;
+  }
+  
+  /* Tekstiniai laukeliai ir select'ai */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  select {
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    margin-bottom: 15px;
+    font-size: 1rem;
+    width: 100%;
+  }
+  
+  /* Checkbox grupė */
+  .checkbox-group {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    color: white;
+  }
+  
+  .checkbox-group input[type="checkbox"] {
+    margin-right: 10px;
+  }
+  
+  /* Mygtukų zona */
+  .buttons {
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  /* Žinutė (klaida arba sėkmė) */
+  .message {
+    font-size: 1rem;
+    color: white;
+    margin-bottom: 10px;
+  }
+  
+  /* Mygtukai */
+  button {
+    background: #4caf50;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    margin: 5px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s, transform 0.2s;
+  }
+  
+  button:hover {
+    background: #45a049;
+    transform: scale(1.05);
+  }
+  
+  /* Grįžimo mygtukas */
+  .back-btn {
+    background: #6a1b9a;
+  }
+  
+  .back-btn:hover {
+    background: #8e24aa;
+  }
+  

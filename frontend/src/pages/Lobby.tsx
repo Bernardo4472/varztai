@@ -4,10 +4,6 @@ import { useNavigate } from "react-router-dom";
 const Main: React.FC = () => {
   const navigate = useNavigate();
 
-  const handleDirectoryPlay = () => {
-    navigate("/main");
-  };
-
   const handleDirectorySettings = () => {
     navigate("/Settings");
   };
@@ -17,13 +13,13 @@ const Main: React.FC = () => {
   const handleDirectoryPlayChoose = () => {
     navigate("/PlayChoose");
   };
-
-  //const [players, setPlayers] = useState<any[]>([]); // jei žaisi su tipais vėliau, galima aprašyti
-  const closeTab = () => {
-    window.opener = null;
-    window.open("", "_self");
-    window.close();
+  const handleDirectoryClose = () => {
+    navigate("/");
   };
+  const handleDirectoryProfile = () => {
+    navigate("/Profile");
+  };
+
   return (
     <div>
       <div className="page_Container">
@@ -33,11 +29,11 @@ const Main: React.FC = () => {
           <div className="form-box">
             <h2 className="form-title">Pasirinkite</h2>
 
-            <button onClick={handleDirectoryPlay}>Žaisti</button>
-            <button onClick={handleDirectoryPlayChoose}>Prisijungti</button>
+            <button onClick={handleDirectoryPlayChoose}>Žaisti</button>
+            <button onClick={handleDirectoryProfile}>Profilis</button>
             <button onClick={handleDirectorySettings}>Nustatymai</button>
-            <button onClick={closeTab}>Išjungti</button>
             <button onClick={handleDirectoryRules}>Taisyklės</button>
+            <button onClick={handleDirectoryClose}>Atsijungti</button>
           </div>
         </div>
       </div>

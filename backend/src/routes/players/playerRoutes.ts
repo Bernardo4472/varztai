@@ -38,9 +38,50 @@ router.patch("/:id/balance", async (req: Request, res: Response): Promise<any> =
   }
 });
 
+// PATCH route to update username
+// TODO: Add authentication middleware to ensure user can only update their own username
+router.patch("/:id/username", async (req: Request, res: Response): Promise<any> => {
+    const { id } = req.params;
+    const { newUsername } = req.body as { newUsername: string };
+
+    if (!newUsername || typeof newUsername !== 'string' || newUsername.trim().length === 0) {
+        return res.status(400).json({ message: "Invalid newUsername provided" });
+    }
+
+    // Optional: Add validation for username length, characters, uniqueness etc.
+
+    try {
+        const result = await db.query(
+            `UPDATE users 
+             SET username = $1 
+             WHERE id = $2 
+             RETURNING id, username, email, balance, wins, losses, games_played`, // Return updated user info
+            [newUsername.trim(), id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        console.log(`DEBUG: Username updated for user ${id}. New data:`, result.rows[0]);
+        res.status(200).json({ message: "Username updated successfully", data: result.rows[0] });
+
+    } catch (err: any) {
+        // Handle potential unique constraint violation if username must be unique
+        if (err.code === '23505') { // PostgreSQL unique violation error code
+             console.error("❌ Error updating username (duplicate):", err.detail);
+             return res.status(409).json({ message: "Username already taken." });
+        }
+        console.error("❌ Error updating username:", err);
+        res.status(500).json({ message: "Server error updating username" });
+    }
+});
+
+
 // GET route to fetch user details (including balance) by ID
 router.get("/:id", async (req: Request, res: Response): Promise<any> => {
   const { id } = req.params;
+  console.log(`[DEBUG] GET /players/${id} received. Headers:`, JSON.stringify(req.headers, null, 2)); // Log headers
 
   // Basic validation for ID
   if (!/^\d+$/.test(id)) {
@@ -48,8 +89,9 @@ router.get("/:id", async (req: Request, res: Response): Promise<any> => {
   }
 
   try {
+    // Fetch all relevant profile data including stats
     const result = await db.query(
-      "SELECT id, username, email, balance FROM users WHERE id = $1",
+      "SELECT id, username, email, balance, wins, losses, games_played FROM users WHERE id = $1",
       [parseInt(id, 10)] // Ensure ID is treated as a number
     );
 

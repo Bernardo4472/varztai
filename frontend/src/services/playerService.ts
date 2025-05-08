@@ -6,6 +6,9 @@ export interface UserDetails {
   username: string;
   email: string;
   balance: number;
+  wins?: number; // Add optional stats fields
+  losses?: number;
+  games_played?: number;
 }
 
 // 🔹 Interface for the balance update response
@@ -24,16 +27,58 @@ export async function getPlayerDetails(userId: number | string, token: string): 
     }
   });
 
-  const result = await response.json();
-  if (!response.ok) {
-    // Try to parse error message from backend response if available
-    const errorResult = await response.json().catch(() => ({ message: "Failed to fetch player details" }));
-    throw new Error(errorResult.message || "Failed to fetch player details");
+  // Try to parse the JSON body regardless of status first
+  let result;
+  try {
+      result = await response.json();
+  } catch (e) {
+      // Handle cases where the response is not JSON (e.g., server error HTML page)
+      throw new Error(`Failed to parse server response. Status: ${response.status}`);
   }
-  // Backend now returns data directly
-  // Backend now returns data directly
+
+  // Now check if the response status was okay
+  if (!response.ok) {
+    // Throw an error using the message from the parsed result, or a default
+    throw new Error(result?.message || `Failed to fetch player details. Status: ${response.status}`);
+  }
+  
+  // If response was ok, parse balance and return the result
+  if (result && typeof result.balance === 'string') {
+    result.balance = parseFloat(result.balance);
+  }
+  // Also parse stats if they are strings (PostgreSQL might return integer/numeric types as strings)
+  if (result && typeof result.wins === 'string') result.wins = parseInt(result.wins, 10);
+  if (result && typeof result.losses === 'string') result.losses = parseInt(result.losses, 10);
+  if (result && typeof result.games_played === 'string') result.games_played = parseInt(result.games_played, 10);
+
   return result; 
 }
+
+// 🔹 Interface for username update response (assuming it returns updated UserDetails)
+export interface UpdateUsernameResponse {
+    message: string;
+    data: UserDetails; 
+}
+
+// 🔸 Function to update username
+export async function updateUsername(userId: number | string, newUsername: string, token: string): Promise<UpdateUsernameResponse> {
+    const response = await fetch(`${API_URL}/players/${userId}/username`, {
+        method: "PATCH",
+        headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ newUsername })
+    });
+
+    const result = await response.json();
+    if (!response.ok) {
+        // Handle potential conflict error (username taken)
+        throw new Error(result.message || "Failed to update username");
+    }
+    return result;
+}
+
 
 // 🔹 Interface for the stats update response
 export interface UpdateStatsResponse {

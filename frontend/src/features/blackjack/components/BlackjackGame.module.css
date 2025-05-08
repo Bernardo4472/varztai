@@ -84,7 +84,7 @@
 }
 
 .dealerSpot {
-    top: 5%;
+    top: 3%;
     left: 50%;
     transform: translateX(-50%);
 }
@@ -108,17 +108,17 @@
 /* Dealer is top: 5%, Self is bottom: 5% */
 
 /* Spot 1: Further Top-Left */
-.playerOtherSpot1 { top: 25%; left: 10%; transform: translate(-50%, -50%); } 
+.playerOtherSpot1 { top: 25%; left: 25%; transform: translate(-50%, -50%); } 
 /* Spot 2: Further Top-Right */
-.playerOtherSpot2 { top: 25%; right: 10%; transform: translate(50%, -50%); }
+.playerOtherSpot2 { top: 25%; right: 25%; transform: translate(50%, -50%); }
 /* Spot 3: Further Mid-Left */
-.playerOtherSpot3 { top: 60%; left: 3%; transform: translate(-50%, -50%); } 
+.playerOtherSpot3 { top: 50%; left: 5%; transform: translate(-50%, -50%); } 
 /* Spot 4: Further Mid-Right */
-.playerOtherSpot4 { top: 60%; right: 3%; transform: translate(50%, -50%); }
+.playerOtherSpot4 { top: 50%; right: 5%; transform: translate(50%, -50%); }
 /* Spot 5: Further Bottom-Left (higher than self) */
-.playerOtherSpot5 { bottom: 15%; left: 25%; transform: translateX(-50%); }
+.playerOtherSpot5 { bottom: 10%; left: 25%; transform: translateX(-50%); }
 /* Spot 6: Further Bottom-Right (higher than self) */
-.playerOtherSpot6 { bottom: 15%; right: 25%; transform: translateX(50%); }
+.playerOtherSpot6 { bottom: 10%; right: 25%; transform: translateX(50%); }
 
 
 /* Hand container (for cards) - Now part of the flex flow */

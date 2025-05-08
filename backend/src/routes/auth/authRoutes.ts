@@ -62,6 +62,7 @@ router.post("/login", async (req: Request, res: Response): Promise<any> => {
     res.status(200).json({
       message: "Prisijungimas sėkmingas",
       token,
+      userId: user.id, // Add userId to the response
       username: user.username,
       balance: user.balance,
     });
