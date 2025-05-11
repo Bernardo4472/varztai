@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getPlayerDetails, updateUsername, UserDetails } from '../services/playerService'; // Import updateUsername
-// Assuming you have a CSS file for styling, or use inline styles/utility classes
-import './Styles.css'; // Using the same shared style as Login
+import { getPlayerDetails, updateUsername, UserDetails } from '../services/playerService';
+import './StylesProfile.css';
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
@@ -10,15 +9,20 @@ const Profile: React.FC = () => {
   const [editableUsername, setEditableUsername] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [isSaving, setIsSaving] = useState<boolean>(false); // State for save button loading
-  const [successMessage, setSuccessMessage] = useState<string | null>(null); // State for success message
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Modal state
+  const [isTopUpOpen, setIsTopUpOpen] = useState(false);
+  const [selectedBank, setSelectedBank] = useState('');
+  const [topUpAmount, setTopUpAmount] = useState('');
 
   useEffect(() => {
     const fetchProfile = async () => {
       setIsLoading(true);
       setError(null);
-      // Retrieve userId and token from localStorage (adjust keys if needed)
-      const userId = localStorage.getItem('userId'); // Assuming userId is stored on login
+
+      const userId = localStorage.getItem('userId');
       const token = localStorage.getItem('token');
 
       if (!userId || !token) {
@@ -31,12 +35,11 @@ const Profile: React.FC = () => {
       try {
         const data = await getPlayerDetails(userId, token);
         setUserData(data);
-        setEditableUsername(data.username); // Initialize editable username
+        setEditableUsername(data.username);
       } catch (err: any) {
         setError(err.message || 'Failed to fetch profile data.');
-        // Handle specific errors, e.g., redirect if token is invalid (401/403)
         if (err.message.includes('401') || err.message.includes('403')) {
-             navigate('/login', { state: { message: 'Session expired. Please log in again.' } });
+          navigate('/login', { state: { message: 'Session expired. Please log in again.' } });
         }
       } finally {
         setIsLoading(false);
@@ -51,11 +54,8 @@ const Profile: React.FC = () => {
   };
 
   const handleSaveChanges = async () => {
-    // --- TODO: Implement Save Logic ---
-    // 1. Get userId and token from localStorage again.
-    // 2. Check if editableUsername has changed from userData.username.
     if (!userData || editableUsername === userData.username) {
-      return; // No changes to save
+      return;
     }
 
     const userId = localStorage.getItem('userId');
@@ -72,17 +72,32 @@ const Profile: React.FC = () => {
 
     try {
       const response = await updateUsername(userId, editableUsername, token);
-      // Update local state with the data returned from the backend
-      setUserData(response.data); 
-      // Update editable username as well in case backend modified it (e.g., trimming)
-      setEditableUsername(response.data.username); 
-      // Update username in localStorage if other parts of the app use it
-      localStorage.setItem('username', response.data.username); 
+      setUserData(response.data);
+      setEditableUsername(response.data.username);
+      localStorage.setItem('username', response.data.username);
       setSuccessMessage("Username updated successfully!");
     } catch (err: any) {
       setError(err.message || "Failed to update username.");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handlePapildyti = () => {
+    setIsTopUpOpen(true);
+  };
+
+  const closeTopUpModal = () => {
+    setIsTopUpOpen(false);
+    setSelectedBank('');
+    setTopUpAmount('');
+  };
+
+  const confirmTopUp = () => {
+    if (userData && topUpAmount) {
+      const updatedBalance = userData.balance + parseFloat(topUpAmount);
+      setUserData({ ...userData, balance: updatedBalance });
+      closeTopUpModal();
     }
   };
 
@@ -95,46 +110,89 @@ const Profile: React.FC = () => {
   }
 
   if (!userData) {
-    // Should be handled by loading/error states, but as a fallback
     return <div className="container"><h1 className="title">Profile not found.</h1><button onClick={() => navigate('/lobby')}>Back to Lobby</button></div>;
   }
 
   return (
     <div className="container">
       <h1 className="title">Your Profile</h1>
-      <div className="profile-details">
-        <p><strong>Email:</strong> {userData.email}</p>
-        
-        <div className="input-container">
-          <label htmlFor="username"><strong>Username:</strong></label>
-          <input 
-            type="text" 
-            id="username"
-            value={editableUsername} 
-            onChange={handleUsernameChange} 
-          />
-        </div>
 
-        <p><strong>Balance:</strong> {userData.balance?.toFixed(2) ?? 'N/A'}$</p>
+      <div className="profile-details">
+        <p className="email-text">
+          <strong>Email:</strong> {userData.email}
+        </p>
+
+        <p className="username-text">
+        <strong>Username:</strong> {userData.username}
+        </p>
+        
+
+
+        <p className="balance-text"><strong>Balance:</strong> ${userData.balance?.toFixed(2) ?? 'N/A'}</p>
+        <button className="papildyti-btn" onClick={handlePapildyti}>
+          Papildyti
+        </button>
+
         <hr />
-        <h2>Stats</h2>
-        <p><strong>Wins:</strong> {userData.wins ?? 'N/A'}</p>
-        <p><strong>Losses:</strong> {userData.losses ?? 'N/A'}</p>
-        <p><strong>Games Played:</strong> {userData.games_played ?? 'N/A'}</p>
+        <h2 className="stats-title">Stats</h2>
+
+        <p className="win-text">
+          <strong>Wins:</strong> {userData.wins ?? 'N/A'}
+        </p>
+
+        <p className="lose-text">
+          <strong>Losses:</strong> {userData.losses ?? 'N/A'}
+        </p>
+
+        <p className="gamesPlayed-text">
+          <strong>Games Played:</strong> {userData.games_played ?? 'N/A'}
+        </p>
       </div>
-      
-      {successMessage && <p className="success-message">{successMessage}</p>} 
-      {error && !successMessage && <p className="error">{error}</p>} {/* Show error only if no success message */}
-      
+
+      {successMessage && <p className="success-message">{successMessage}</p>}
+      {error && !successMessage && <p className="error">{error}</p>}
+
       <div className="profile-actions">
-        <button 
-          onClick={handleSaveChanges} 
+        <button
+          onClick={handleSaveChanges}
           disabled={!userData || editableUsername === userData.username || isSaving}
         >
           {isSaving ? 'Saving...' : 'Save Changes'}
         </button>
         <button onClick={() => navigate('/lobby')}>Back to Lobby</button>
       </div>
+
+      {isTopUpOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>Pasirinkite banką ir sumą</h2>
+
+            <label>Bankas:</label>
+            <select
+              value={selectedBank}
+              onChange={(e) => setSelectedBank(e.target.value)}
+            >
+              <option value="">-- Pasirinkite --</option>
+              <option value="Swedbank">Swedbank</option>
+              <option value="SEB">SEB</option>
+              <option value="Luminor">Luminor</option>
+            </select>
+
+            <label>Suma:</label>
+            <input
+              type="number"
+              value={topUpAmount}
+              onChange={(e) => setTopUpAmount(e.target.value)}
+              placeholder="Pvz. 10.00"
+            />
+
+            <div className="modal-buttons">
+              <button onClick={confirmTopUp}>Patvirtinti</button>
+              <button onClick={closeTopUpModal}>Atšaukti</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
