@@ -20,6 +20,28 @@ const Room: React.FC = () => {
   // Remove betAmount state if BlackjackGame handles its own input state
   // const [betAmount, setBetAmount] = useState<string>("10");
   const [myPlayerId, setMyPlayerId] = useState<string | null>(null); // Store this client's socket ID
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+    const [isPlaying, setIsPlaying] = useState(false);
+  
+    useEffect(() => {
+      audioRef.current = new Audio("/sounds/background.mp3");
+      audioRef.current.loop = true;
+      audioRef.current.volume = 0.1;
+  
+      return () => {
+        audioRef.current?.pause();
+      };
+    }, []);
+  
+    const startMusic = () => {
+      if (audioRef.current && !isPlaying) {
+        audioRef.current.play().then(() => {
+          setIsPlaying(true);
+        }).catch((err) => {
+          console.warn("Naršyklė neleido automatiškai paleisti garso:", err);
+        });
+      }
+    };
 
   // Memoize the action handler to prevent unnecessary re-renders of BlackjackGame
   const handlePlayerAction = useCallback((action: { actionType: string; payload?: any }) => {
@@ -180,6 +202,9 @@ const Room: React.FC = () => {
       {/* Keep the Leave button accessible */}
       <div style={{ position: 'absolute', bottom: '10px', left: '10px' }}>
         <button className="menu-btn" onClick={() => navigate('/playchoose')}>Leave Room</button>
+      </div>
+      <div style={{ position: 'absolute', top: '10px', left: '10px'}}>
+      <button onClick={startMusic}>Background Music</button>
       </div>
     </div>
   );
