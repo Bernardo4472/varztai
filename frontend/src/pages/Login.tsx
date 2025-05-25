@@ -2,31 +2,33 @@
 import { loginUser, LoginResponse, AuthData } from "../services/authService";
 import { useNavigate } from "react-router-dom";
 import "./Styles.css";
+import { useAuth } from "../context/AuthContext"; // ← IMPORTUOJAM
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
-
+  const { login } = useAuth(); // ← PANAUDOJAM login FUNKCIJĄ
+  
   const handleLogin = async () => {
     setError(null);
     const loginData: AuthData = { email, password };
 
     try {
-      const res: LoginResponse = await loginUser(loginData);
+    const res: LoginResponse = await loginUser(loginData);
 
-      // Store token, userId, username, and balance in localStorage
-      localStorage.setItem("token", res.token);
-      localStorage.setItem("userId", String(res.userId)); // Store userId (convert to string if number)
-      localStorage.setItem("username", res.username);
-      localStorage.setItem("balance", res.balance.toString());
+    localStorage.setItem("token", res.token);
+    localStorage.setItem("userId", String(res.userId));
+    localStorage.setItem("username", res.username);
+    localStorage.setItem("balance", res.balance.toString());
 
-      console.log("✅ Prisijungta:", res); // Log the full response including userId
-      navigate("/Lobby"); // Perkeliame į pagrindinį puslapį
-    } catch (err: any) {
-      setError(err.message || "Nepavyko prisijungti");
-    }
+    login(res.token, res.username);
+
+    navigate("/Lobby");
+  } catch (err: any) {
+    setError(err.message || "Nepavyko prisijungti");
+  }
   };
 
   return (

@@ -34,8 +34,8 @@ const Settings: React.FC = () => {
   },
 );
 
-      updateUsername(username); // 🔹 Atnaujina AuthContext visur
-      saveSettings();           // 🔹 Išsaugo sound volume
+      updateUsername(username); //  Atnaujina AuthContext visur
+      saveSettings();           //  Išsaugo sound volume
 
       setMessage("✅ Settings saved successfully!");
     } catch (err: any) {
