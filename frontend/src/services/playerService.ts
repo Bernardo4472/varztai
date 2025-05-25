@@ -124,6 +124,21 @@ export async function updatePlayerBalance(userId: number | string, changeAmount:
   if (!response.ok) {
     throw new Error(result.message || "Failed to update balance");
   }
+
+  // Ensure numeric fields in the response data are parsed correctly
+  if (result.data && typeof result.data.balance === 'string') {
+    result.data.balance = parseFloat(result.data.balance);
+  }
+  if (result.data && typeof result.data.wins === 'string') {
+    result.data.wins = parseInt(result.data.wins, 10);
+  }
+  if (result.data && typeof result.data.losses === 'string') {
+    result.data.losses = parseInt(result.data.losses, 10);
+  }
+  if (result.data && typeof result.data.games_played === 'string') {
+    result.data.games_played = parseInt(result.data.games_played, 10);
+  }
+
   return result;
 }
 

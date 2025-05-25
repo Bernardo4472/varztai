@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getPlayerDetails, updateUsername, UserDetails } from '../services/playerService';
+import { getPlayerDetails, updateUsername, UserDetails, updatePlayerBalance } from '../services/playerService';
 import { useAuth } from '../context/AuthContext'; // ⬅️ naudoti auth context
 import './StylesProfile.css';
 
@@ -90,13 +90,40 @@ const Profile: React.FC = () => {
     setIsTopUpOpen(false);
     setSelectedBank('');
     setTopUpAmount('');
+    // Do not clear setError and setSuccessMessage here,
+    // so messages from confirmTopUp persist after modal closes.
   };
 
-  const confirmTopUp = () => {
-    if (userData && topUpAmount) {
-      const updatedBalance = userData.balance + parseFloat(topUpAmount);
-      setUserData({ ...userData, balance: updatedBalance });
-      closeTopUpModal();
+  const confirmTopUp = async () => {
+    const userId = localStorage.getItem('userId');
+    const token = localStorage.getItem('token');
+
+    if (!userId || !token || !userData || !topUpAmount) {
+      setError("Authentication error or missing data. Cannot top up balance.");
+      return;
+    }
+
+    const amount = parseFloat(topUpAmount);
+    if (isNaN(amount) || amount <= 0) {
+      setError("Please enter a valid positive amount.");
+      return;
+    }
+
+    setIsSaving(true); // Use isSaving for loading state during top-up
+    setError(null); // Clear previous page-level errors before new attempt
+    setSuccessMessage(null); // Clear previous page-level success messages before new attempt
+
+    try {
+      const response = await updatePlayerBalance(userId, amount, token);
+      setUserData(response.data); // Update user data with response from API
+      setSuccessMessage("Balance updated successfully!"); // Set page-level success message
+      // closeTopUpModal will be called, but success message will persist
+      closeTopUpModal(); 
+    } catch (err: any) {
+      setError(err.message || "Failed to update balance."); // Set page-level error message
+      // Do not close modal on error, so user can see the issue or retry.
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -155,16 +182,16 @@ const Profile: React.FC = () => {
       {isTopUpOpen && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h2>Pasirinkite banką ir sumą</h2>
-            <label>Bankas:</label>
+            <h2>Select bank and amount</h2>
+            <label>Bank:</label>
             <select value={selectedBank} onChange={(e) => setSelectedBank(e.target.value)}>
-              <option value="">-- Pasirinkite --</option>
+              <option value="">-- Choose --</option>
               <option value="Swedbank">Swedbank</option>
               <option value="SEB">SEB</option>
               <option value="Luminor">Luminor</option>
             </select>
 
-            <label>Suma:</label>
+            <label>Sum:</label>
             <input
               type="number"
               value={topUpAmount}
@@ -173,8 +200,8 @@ const Profile: React.FC = () => {
             />
 
             <div className="modal-buttons">
-              <button onClick={confirmTopUp}>Patvirtinti</button>
-              <button onClick={closeTopUpModal}>Atšaukti</button>
+              <button onClick={confirmTopUp}>Confirm</button>
+              <button onClick={closeTopUpModal}>Cancel</button>
             </div>
           </div>
         </div>

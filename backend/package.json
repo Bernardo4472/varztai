@@ -22,13 +22,13 @@
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
     "@types/cors": "^2.8.17",
+    "@types/dotenv": "^8.2.0",
     "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.9",
-    "@types/node": "^20.11.17",
-    "@types/uuid": "^9.0.8",
-    "@types/dotenv": "^8.2.0",
+    "@types/node": "^20.17.50",
     "@types/pg": "^8.6.6",
     "@types/socket.io": "^3.0.1",
+    "@types/uuid": "^9.0.8",
     "nodemon": "^3.1.0",
     "typescript": "^5.3.3"
   }
