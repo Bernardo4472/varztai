@@ -20,25 +20,26 @@ const Main: React.FC = () => {
     navigate("/Profile");
   };
 
-  return (
-    <div>
-      <div className="page_Container">
-        <h1 className="title">Blackjack žaidimas</h1>
+return (
+  <div>
+    <div className="page_Container">
+      <h1 className="title">Blackjack Game</h1>
 
-        <div className="container">
-          <div className="form-box">
-            <h2 className="form-title">Pasirinkite</h2>
+      <div className="container">
+        <div className="form-box">
+          <h2 className="form-title">Choose an option</h2>
 
-            <button onClick={handleDirectoryPlayChoose}>Žaisti</button>
-            <button onClick={handleDirectoryProfile}>Profilis</button>
-            <button onClick={handleDirectorySettings}>Nustatymai</button>
-            <button onClick={handleDirectoryRules}>Taisyklės</button>
-            <button onClick={handleDirectoryClose}>Atsijungti</button>
-          </div>
+          <button onClick={handleDirectoryPlayChoose}>Play</button>
+          <button onClick={handleDirectoryProfile}>Profile</button>
+          <button onClick={handleDirectorySettings}>Settings</button>
+          <button onClick={handleDirectoryRules}>Rules</button>
+          <button onClick={handleDirectoryClose}>Log Out</button>
         </div>
       </div>
     </div>
-  );
+  </div>
+);
+
 };
 
 export default Main;

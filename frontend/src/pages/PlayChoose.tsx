@@ -26,8 +26,6 @@ const PlayChoose: React.FC = () => {
       }
 
       const data = await response.json();
-      console.log("Room created:", data);
-      alert(`Kambarys sėkmingai sukurtas! ID: ${data.roomId}`);
       navigate(`/room/${data.roomId}`); // Navigate to the room page
     } catch (error) {
       console.error("Failed to create room:", error);
@@ -60,8 +58,6 @@ const PlayChoose: React.FC = () => {
       }
 
       const data = await response.json();
-      console.log("Joined room:", data);
-      alert(`Sėkmingai prisijungta prie kambario: ${data.roomId}`);
       navigate(`/room/${data.roomId}`); // Navigate to the room page
     } catch (error) {
       console.error("Failed to join room:", error);
@@ -71,15 +67,15 @@ const PlayChoose: React.FC = () => {
 
   return (
     <div className="page_Container">
-      <h1 className="title">Pasirinkite Žaidimo Būdą</h1>
+      <h1 className="title">Choose a Game Mode</h1>
       <div className="container form-box">
         <button className="menu-btn" onClick={handleCreateRoom}>
-          Sukurti Naują Kambarį
+          Create a New Room
         </button>
 
         {!showJoinInput ? (
           <button className="menu-btn" onClick={handleJoinRoomClick}>
-            Prisijungti prie Kambario su ID
+            Join the Room with ID
           </button>
         ) : (
           <div className="join-room-section">
@@ -91,16 +87,16 @@ const PlayChoose: React.FC = () => {
               className="room-id-input"
             />
             <button className="menu-btn" onClick={handleJoinRoomSubmit}>
-              Patvirtinti Prisijungimą
+              Confirm Login
             </button>
             <button className="menu-btn" onClick={() => setShowJoinInput(false)}>
-              Atšaukti
+              Cancel
             </button>
           </div>
         )}
 
         <button className="menu-btn" onClick={() => navigate("/lobby")}>
-          Grįžti į Pagrindinį Meniu
+          Return to Main Menu
         </button>
       </div>
     </div>

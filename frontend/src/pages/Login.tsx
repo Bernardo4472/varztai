@@ -39,7 +39,7 @@ const Login: React.FC = () => {
         <div className="input-container">
           <input
             type="email"
-            placeholder="El. paštas"
+            placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -47,14 +47,14 @@ const Login: React.FC = () => {
         <div className="input-container">
           <input
             type="password"
-            placeholder="Slaptažodis"
+            placeholder="Pawword"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
         {error && <p className="error">{error}</p>}
-        <button onClick={handleLogin}>Prisijungti</button>
-        <p className="white">Neturi paskyros? <a href="/register">Registruokis</a></p>
+        <button onClick={handleLogin}>Log in</button>
+        <p className="white">Don't have an account? <a href="/register">Register</a></p>
       </div>
     </div>
   );
