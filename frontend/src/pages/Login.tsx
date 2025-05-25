@@ -54,7 +54,7 @@ const Login: React.FC = () => {
         </div>
         {error && <p className="error">{error}</p>}
         <button onClick={handleLogin}>Prisijungti</button>
-        <p>Neturi paskyros? <a href="/register">Registruokis</a></p>
+        <p className="white">Neturi paskyros? <a href="/register">Registruokis</a></p>
       </div>
     </div>
   );
