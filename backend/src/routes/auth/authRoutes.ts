@@ -55,9 +55,15 @@ router.post("/login", async (req: Request, res: Response): Promise<any> => {
       return res.status(400).json({ message: "Neteisingas slaptažodis" });
     }
 
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET as string, {
-      expiresIn: "7d",
-    });
+    const token = jwt.sign(
+  {
+    userId: user.id,
+    username: user.username, // ← PRIDEDAM
+  },
+  process.env.JWT_SECRET as string,
+  { expiresIn: "7d" }
+);
+
 
     res.status(200).json({
       message: "Prisijungimas sėkmingas",

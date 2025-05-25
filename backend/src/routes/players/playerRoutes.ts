@@ -152,5 +152,52 @@ router.patch("/:id/stats", async (req: Request, res: Response): Promise<any> => 
     }
 });
 
+router.put("/me", async (req: Request, res: Response) => {
+  const rawUserId = req.headers["x-user-id"];
+
+  // Konvertuojam į string ir integer (saugiai)
+  const userId = Array.isArray(rawUserId) ? rawUserId[0] : rawUserId;
+  const numericUserId = parseInt(userId || "", 10);
+
+  const { username, password } = req.body as { username: string; password?: string };
+
+  if (!numericUserId || !username) {
+    return res.status(400).json({ message: "Missing or invalid user ID or username" });
+  }
+
+  try {
+    const updates: string[] = [];
+    const values: any[] = [];
+
+    updates.push(`username = $${values.length + 1}`);
+    values.push(username);
+
+    if (password) {
+      updates.push(`password = crypt($${values.length + 1}, gen_salt('bf'))`);
+      values.push(password);
+    }
+
+    values.push(numericUserId);
+
+    const query = `
+      UPDATE users
+      SET ${updates.join(", ")}
+      WHERE id = $${values.length}
+      RETURNING id, username, email, balance
+    `;
+
+    const result = await db.query(query, values);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ message: "Updated", data: result.rows[0] });
+  } catch (err) {
+    console.error("❌ Error updating player:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 
 export default router;

@@ -63,7 +63,7 @@ const Register: React.FC = () => {
         {success && <p style={{ color: "lightgreen" }}>✅ Registracija sėkminga! Perkeliama...</p>}
 
         <button onClick={handleRegister}>Registruotis</button>
-        <p>Jau turi paskyrą? <a href="/">Prisijunk</a></p>
+        <p className="white">Jau turi paskyrą? <a href="/">Prisijunk</a></p>
       </div>
     </div>
   );

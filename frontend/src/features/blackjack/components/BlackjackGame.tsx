@@ -4,6 +4,7 @@ import styles from "./BlackjackGame.module.css";
 // import { useAuth } from '../../../context/AuthContext';
 // import { getPlayerDetails } from '../../../services/playerService';
 import { BlackjackGameState, PlayerGameState, Card as GameCard } from '../../../types/gameTypes'; // Use types from frontend
+import { useAuth } from "../../../context/AuthContext";
 
 // Define Props interface
 interface BlackjackGameProps {
@@ -60,7 +61,7 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({
   // --- Local UI State ---
   const [betAmountInput, setBetAmountInput] = useState<string>(String(gameState.minBet || DEFAULT_BET));
   const [error, setError] = useState<string | null>(null); // Keep for local UI errors
-
+  const { user } = useAuth();
   // Update bet input default when minBet changes (e.g., first gameState received)
   useEffect(() => {
     setBetAmountInput(String(gameState.minBet || DEFAULT_BET));
@@ -143,7 +144,7 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({
           </div>
           {/* Player Info Below Cards */}
           <div className={styles.playerInfo}>
-            {player.name} (You)
+            {user?.username} (You)
             {player.balance !== undefined && <div className={styles.balance}>{player.balance}$</div>}
             {player.bet !== null && <div className={styles.betIndicator}>Bet: {player.bet}$</div>}
             {player.hand.length > 0 && (
