@@ -21,27 +21,63 @@ const Room: React.FC = () => {
   // const [betAmount, setBetAmount] = useState<string>("10");
   const [myPlayerId, setMyPlayerId] = useState<string | null>(null); // Store this client's socket ID
   const audioRef = useRef<HTMLAudioElement | null>(null);
-    const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   
-    useEffect(() => {
-      audioRef.current = new Audio("/sounds/background.mp3");
-      audioRef.current.loop = true;
-      audioRef.current.volume = 0.1;
-  
-      return () => {
-        audioRef.current?.pause();
-      };
-    }, []);
-  
-    const startMusic = () => {
-      if (audioRef.current && !isPlaying) {
-        audioRef.current.play().then(() => {
-          setIsPlaying(true);
-        }).catch((err) => {
-          console.warn("Naršyklė neleido automatiškai paleisti garso:", err);
-        });
-      }
+  // Volume state for background music
+  const [volume, setVolume] = useState(0.1);
+  const [trackIndex, setTrackIndex] = useState(0);
+
+  const tracks = [
+    "/sounds/background1.mp3",
+    "/sounds/background2.mp3",
+    "/sounds/background3.mp3",
+    "/sounds/background4.mp3",
+    "/sounds/background5.mp3",
+  ];
+
+  const playTrack = (index: number) => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+    const newAudio = new Audio(tracks[index]);
+    newAudio.loop = true;
+    newAudio.volume = volume;
+    audioRef.current = newAudio;
+    newAudio
+      .play()
+      .then(() => setIsPlaying(true))
+      .catch((err) =>
+        console.warn("Nepavyko paleisti garso automatiškai:", err)
+      );
+  };
+
+  useEffect(() => {
+    // Pirmą kartą įkeliame pradinį takelį
+    audioRef.current = new Audio(tracks[trackIndex]);
+    audioRef.current.loop = true;
+    audioRef.current.volume = volume;
+
+    return () => {
+      audioRef.current?.pause();
     };
+  }, []);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, [volume]);
+
+  const handleButtonClick = () => {
+    const nextIndex = (trackIndex + 1) % tracks.length;
+    setTrackIndex(nextIndex);
+    playTrack(nextIndex);
+  };
+
+  const handleVolumeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setVolume(parseFloat(event.target.value));
+  };
+
 
   // Memoize the action handler to prevent unnecessary re-renders of BlackjackGame
   const handlePlayerAction = useCallback((action: { actionType: string; payload?: any }) => {
@@ -202,10 +238,7 @@ const Room: React.FC = () => {
       {/* Keep the Leave button accessible */}
       <div style={{ position: 'absolute', bottom: '10px', left: '10px' }}>
         <button className="menu-btn" onClick={() => navigate('/playchoose')}>Leave Room</button>
-      </div>
-      <div style={{ position: 'absolute', top: '10px', left: '10px'}}>
-      <button className="menu-btn" onClick={startMusic}>Background Music</button>
-      </div>
+    </div>
     </div>
   );
 };
