@@ -157,7 +157,7 @@ const Profile: React.FC = () => {
         </p>
 
         <p className="balance-text"><strong>Balance:</strong> ${userData.balance?.toFixed(2) ?? 'N/A'}</p>
-        <button className="papildyti-btn" onClick={handlePapildyti}>Papildyti</button>
+        <button className="papildyti-btn" onClick={handlePapildyti}>Add balance</button>
 
         <hr />
         <h2 className="stats-title">Stats</h2>
