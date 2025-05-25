@@ -238,21 +238,6 @@ const Room: React.FC = () => {
       {/* Keep the Leave button accessible */}
       <div style={{ position: 'absolute', bottom: '10px', left: '10px' }}>
         <button className="menu-btn" onClick={() => navigate('/playchoose')}>Leave Room</button>
-      </div>
-       <div style={{ position: "absolute", top: "10px", left: "10px" }}>
-      <button onClick={handleButtonClick}>
-        {isPlaying ? "Background Muzika" : "Background Muzika"}
-      </button>
-      <div style={{ marginTop: "10px"}}>
-        <input
-          type="range"
-          min="0"
-          max="1"
-          step="0.01"
-          value={volume}
-          onChange={handleVolumeChange}
-        />
-      </div>
     </div>
     </div>
   );
