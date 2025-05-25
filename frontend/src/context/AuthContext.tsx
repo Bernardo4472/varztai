@@ -1,5 +1,11 @@
-import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
-import { jwtDecode } from 'jwt-decode'; // Import jwt-decode
+import React, {
+  createContext,
+  useState,
+  useContext,
+  ReactNode,
+  useEffect,
+} from "react";
+import { jwtDecode } from "jwt-decode"; // Import jwt-decode
 
 // Interface for the decoded JWT payload (adjust based on your actual token structure)
 interface DecodedToken {
@@ -25,6 +31,7 @@ interface AuthContextType {
   login: (token: string) => void;
   logout: () => void;
   isLoading: boolean; // Add loading state for initial auth check
+  updateUsername: (newUsername: string) => void;
 }
 
 interface AuthProviderProps {
@@ -41,7 +48,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Effect to check for existing token on initial load
   useEffect(() => {
-    const storedToken = localStorage.getItem('token');
+    const storedToken = localStorage.getItem("token");
     if (storedToken) {
       try {
         const decoded = jwtDecode<DecodedToken>(storedToken);
@@ -51,11 +58,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setUser({ id: decoded.userId, username: decoded.username });
         } else {
           // Token expired, remove it
-          localStorage.removeItem('token');
+          localStorage.removeItem("token");
         }
       } catch (error) {
         console.error("Failed to decode token:", error);
-        localStorage.removeItem('token'); // Remove invalid token
+        localStorage.removeItem("token"); // Remove invalid token
       }
     }
     setIsLoading(false); // Finished loading initial auth state
@@ -64,10 +71,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = (newToken: string) => {
     try {
       const decoded = jwtDecode<DecodedToken>(newToken);
-      localStorage.setItem('token', newToken);
+      localStorage.setItem("token", newToken);
       setToken(newToken);
       setUser({ id: decoded.userId, username: decoded.username });
-      console.log("User logged in:", { id: decoded.userId, username: decoded.username });
+      console.log("User logged in:", {
+        id: decoded.userId,
+        username: decoded.username,
+      });
     } catch (error) {
       console.error("Failed to decode token on login:", error);
       // Handle login failure - maybe clear state?
@@ -75,8 +85,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const updateUsername = (newUsername: string) => {
+    setUser((prev) => (prev ? { ...prev, username: newUsername } : prev));
+  };
+
   const logout = () => {
-    localStorage.removeItem('token');
+    localStorage.removeItem("token");
     setToken(null);
     setUser(null);
     console.log("User logged out");
@@ -85,7 +99,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const isAuthenticated = !!token && !!user;
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, token, login, logout, isLoading }}>
+    <AuthContext.Provider
+      value={{
+        isAuthenticated,
+        user,
+        token,
+        login,
+        logout,
+        isLoading,
+        updateUsername,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -95,7 +119,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };

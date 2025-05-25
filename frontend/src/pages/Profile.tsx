@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getPlayerDetails, updateUsername, UserDetails } from '../services/playerService';
+import { useAuth } from '../context/AuthContext'; // ⬅️ naudoti auth context
 import './StylesProfile.css';
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
+  const { user, updateUsername: updateAuthUsername } = useAuth(); // ⬅️ auth vartotojas
   const [userData, setUserData] = useState<UserDetails | null>(null);
   const [editableUsername, setEditableUsername] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -12,7 +14,6 @@ const Profile: React.FC = () => {
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Modal state
   const [isTopUpOpen, setIsTopUpOpen] = useState(false);
   const [selectedBank, setSelectedBank] = useState('');
   const [topUpAmount, setTopUpAmount] = useState('');
@@ -54,17 +55,15 @@ const Profile: React.FC = () => {
   };
 
   const handleSaveChanges = async () => {
-    if (!userData || editableUsername === userData.username) {
-      return;
-    }
-
     const userId = localStorage.getItem('userId');
     const token = localStorage.getItem('token');
 
-    if (!userId || !token) {
+    if (!userId || !token || !userData) {
       setError("Authentication error. Cannot save changes.");
       return;
     }
+
+    if (editableUsername === userData.username) return;
 
     setIsSaving(true);
     setError(null);
@@ -74,7 +73,7 @@ const Profile: React.FC = () => {
       const response = await updateUsername(userId, editableUsername, token);
       setUserData(response.data);
       setEditableUsername(response.data.username);
-      localStorage.setItem('username', response.data.username);
+      updateAuthUsername(response.data.username); // ⬅️ atnaujina visą kontekstą
       setSuccessMessage("Username updated successfully!");
     } catch (err: any) {
       setError(err.message || "Failed to update username.");
@@ -106,11 +105,17 @@ const Profile: React.FC = () => {
   }
 
   if (error) {
-    return <div className="container error"><h1 className="title">Error</h1><p>{error}</p><button onClick={() => navigate('/lobby')}>Back to Lobby</button></div>;
+    return (
+      <div className="container error">
+        <h1 className="title">Error</h1>
+        <p>{error}</p>
+        <button onClick={() => navigate('/lobby')}>Back to Lobby</button>
+      </div>
+    );
   }
 
   if (!userData) {
-    return <div className="container"><h1 className="title">Profile not found.</h1><button onClick={() => navigate('/lobby')}>Back to Lobby</button></div>;
+    return <div className="container"><h1 className="title">Profile not found.</h1></div>;
   }
 
   return (
@@ -118,35 +123,20 @@ const Profile: React.FC = () => {
       <h1 className="title">Your Profile</h1>
 
       <div className="profile-details">
-        <p className="email-text">
-          <strong>Email:</strong> {userData.email}
-        </p>
+        <p className="email-text"><strong>Email:</strong> {userData.email}</p>
 
         <p className="username-text">
-        <strong>Username:</strong> {userData.username}
+          <strong>Username:</strong> {user?.username ?? userData.username}
         </p>
-        
-
 
         <p className="balance-text"><strong>Balance:</strong> ${userData.balance?.toFixed(2) ?? 'N/A'}</p>
-        <button className="papildyti-btn" onClick={handlePapildyti}>
-          Papildyti
-        </button>
+        <button className="papildyti-btn" onClick={handlePapildyti}>Papildyti</button>
 
         <hr />
         <h2 className="stats-title">Stats</h2>
-
-        <p className="win-text">
-          <strong>Wins:</strong> {userData.wins ?? 'N/A'}
-        </p>
-
-        <p className="lose-text">
-          <strong>Losses:</strong> {userData.losses ?? 'N/A'}
-        </p>
-
-        <p className="gamesPlayed-text">
-          <strong>Games Played:</strong> {userData.games_played ?? 'N/A'}
-        </p>
+        <p className="win-text"><strong>Wins:</strong> {userData.wins ?? 'N/A'}</p>
+        <p className="lose-text"><strong>Losses:</strong> {userData.losses ?? 'N/A'}</p>
+        <p className="gamesPlayed-text"><strong>Games Played:</strong> {userData.games_played ?? 'N/A'}</p>
       </div>
 
       {successMessage && <p className="success-message">{successMessage}</p>}
@@ -155,7 +145,7 @@ const Profile: React.FC = () => {
       <div className="profile-actions">
         <button
           onClick={handleSaveChanges}
-          disabled={!userData || editableUsername === userData.username || isSaving}
+          disabled={editableUsername === userData.username || isSaving}
         >
           {isSaving ? 'Saving...' : 'Save Changes'}
         </button>
@@ -166,12 +156,8 @@ const Profile: React.FC = () => {
         <div className="modal-overlay">
           <div className="modal-content">
             <h2>Pasirinkite banką ir sumą</h2>
-
             <label>Bankas:</label>
-            <select
-              value={selectedBank}
-              onChange={(e) => setSelectedBank(e.target.value)}
-            >
+            <select value={selectedBank} onChange={(e) => setSelectedBank(e.target.value)}>
               <option value="">-- Pasirinkite --</option>
               <option value="Swedbank">Swedbank</option>
               <option value="SEB">SEB</option>

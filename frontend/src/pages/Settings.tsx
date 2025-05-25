@@ -1,23 +1,23 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import "./StylesSettings.css";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import './StylesSettings.css';
+import { updatePlayerInfo } from "../services/playerService";
+import { useAuth } from "../context/AuthContext"; // 🔹 naudoti auth context
+import { useSettings } from "../context/settingsContext"; // 🔹 naudoti settings tik garsui
 
 const Settings: React.FC = () => {
-  const [username, setUsername] = useState<string>("User123");
-  const [displayName, setDisplayName] = useState<string>("Player One");
-  const [email, setEmail] = useState<string>("user@example.com");
-  const [password, setPassword] = useState<string>("");
-  const [confirmPassword, setConfirmPassword] = useState<string>("");
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
-  const [language, setLanguage] = useState<"en" | "lt">("en");
-  const [notifications, setNotifications] = useState<boolean>(true);
-  const [message, setMessage] = useState<string>("");
-
+  const { user, updateUsername } = useAuth();
+  const { soundVolume, setSoundVolume, saveSettings } = useSettings();
   const navigate = useNavigate();
 
-  const handleSave = (): void => {
-    if (!username || !email || !displayName) {
-      setMessage("❗ Username, display name and email cannot be empty.");
+  const [username, setUsername] = useState<string>(user?.username || "");
+  const [password, setPassword] = useState<string>("");
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const [message, setMessage] = useState<string>("");
+
+  const handleSave = async (): Promise<void> => {
+    if (!username) {
+      setMessage("❗ Username cannot be empty.");
       return;
     }
 
@@ -26,14 +26,28 @@ const Settings: React.FC = () => {
       return;
     }
 
-    setMessage("✅ Settings saved successfully!");
+    try {
+      await updatePlayerInfo(
+  {
+    username,
+    password: password || undefined,
+  },
+);
+
+      updateUsername(username); // 🔹 Atnaujina AuthContext visur
+      saveSettings();           // 🔹 Išsaugo sound volume
+
+      setMessage("✅ Settings saved successfully!");
+    } catch (err: any) {
+      console.error(err);
+      setMessage("❌ Failed to save settings: " + (err.message || "Unknown error"));
+    }
   };
 
   return (
     <div className="page_Container">
       <h1 className="title">Settings</h1>
       <div className="settings-grid">
-        {/* Kairė pusė */}
         <div className="settings-column">
           <h2 className="form-title">Account Info</h2>
 
@@ -43,25 +57,6 @@ const Settings: React.FC = () => {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
-
-          <label className="input-label">Display Name</label>
-          <input
-            type="text"
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-          />
-
-          <label className="input-label">Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
-
-        {/* Dešinė pusė */}
-        <div className="settings-column">
-          <h2 className="form-title">Preferences</h2>
 
           <label className="input-label">New Password</label>
           <input
@@ -78,28 +73,9 @@ const Settings: React.FC = () => {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
           />
-
-          <label className="input-label">Theme</label>
-          <select value={theme} onChange={(e) => setTheme(e.target.value as "dark" | "light")}>
-            <option value="dark">Dark</option>
-            <option value="light">Light</option>
-          </select>
-
-          <label className="input-label">Language</label>
-          <select value={language} onChange={(e) => setLanguage(e.target.value as "en" | "lt")}>
-            <option value="en">English</option>
-            <option value="lt">Lietuvių</option>
-          </select>
-
-          <div className="checkbox-group">
-            <input
-              type="checkbox"
-              checked={notifications}
-              onChange={(e) => setNotifications(e.target.checked)}
-            />
-            <label>Receive email notifications</label>
-          </div>
         </div>
+
+        
       </div>
 
       <div className="buttons">
@@ -110,7 +86,7 @@ const Settings: React.FC = () => {
           onClick={() => navigate("/lobby")}
           style={{ margin: "10px" }}
         >
-          Back to Lobby
+          Back to Home
         </button>
       </div>
     </div>

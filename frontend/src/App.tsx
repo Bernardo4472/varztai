@@ -8,20 +8,23 @@ import PlayChoose from './pages/PlayChoose';
 import Lobby from './pages/Lobby';
 import Rules from './pages/Rules';
 import Room from './pages/Room'; // Import the Room component
+import { SettingsProvider } from "./context/settingsContext";
 
 const App = () => {
   return (
-    <Routes>
-      <Route path="/" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/main" element={<Main />} />
-      <Route path="/settings" element={<Settings />} />
-      <Route path="/profile" element={<Profile />} />
-      <Route path="/playChoose" element={<PlayChoose />} />
-      <Route path="/lobby" element={<Lobby />} />
-      <Route path="/rules" element={<Rules />} />
-      <Route path="/room/:roomId" element={<Room />} /> {/* Add route for Room */}
-    </Routes>
+    <SettingsProvider> {/* Wrap the app with SettingsProvider */}
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/main" element={<Main />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/playChoose" element={<PlayChoose />} />
+        <Route path="/lobby" element={<Lobby />} />
+        <Route path="/rules" element={<Rules />} />
+        <Route path="/room/:roomId" element={<Room />} /> {/* Add route for Room */}
+      </Routes>
+    </SettingsProvider>
   );
 };
 
