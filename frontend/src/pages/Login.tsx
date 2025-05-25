@@ -47,7 +47,7 @@ const Login: React.FC = () => {
         <div className="input-container">
           <input
             type="password"
-            placeholder="Pasword"
+            placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
