@@ -204,7 +204,7 @@ const Room: React.FC = () => {
         <button className="menu-btn" onClick={() => navigate('/playchoose')}>Leave Room</button>
       </div>
       <div style={{ position: 'absolute', top: '10px', left: '10px'}}>
-      <button onClick={startMusic}>Background Music</button>
+      <button className="menu-btn" onClick={startMusic}>Background Music</button>
       </div>
     </div>
   );
